@@ -1,33 +1,32 @@
-import { FormEvent, useEffect, useMemo, useState } from 'react'
+import { FormEvent, useEffect, useState, type ReactNode } from 'react'
 import {
-  AlertTriangle,
   ArrowRight,
   ArrowUp,
   BadgeCheck,
   BriefcaseBusiness,
   Building2,
-  CalendarDays,
   ChartNoAxesCombined,
   ChartPie,
   Check,
   ChevronRight,
-  ClipboardCheck,
   Download,
-  ExternalLink,
+  Eye,
   FileCheck2,
+  FileText,
+  Gavel,
   Landmark,
+  Layers,
   Mail,
   MapPin,
   Menu,
   MessageCircle,
-  Moon,
+  MonitorSmartphone,
   Phone,
-  Scale,
+  Send,
   ShieldCheck,
-  Sun,
+  Star,
   TrendingUp,
-  UserRound,
-  UsersRound,
+  UserPlus,
   X,
   type LucideIcon,
 } from 'lucide-react'
@@ -36,7 +35,10 @@ import { NeuButton } from './components/NeuButton'
 import { NeuCard } from './components/NeuCard'
 import { Reveal } from './components/Reveal'
 import { SectionTitle } from './components/SectionTitle'
+import { DesktopNav, MobileNavList } from './components/SiteNav'
+import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
+import { InfoPage, pageTitles } from './pages/InfoPages'
 
 const serviceIcons: Record<string, LucideIcon> = {
   ChartNoAxesCombined,
@@ -47,28 +49,72 @@ const serviceIcons: Record<string, LucideIcon> = {
   ChartPie,
 }
 
-function Logo() {
+const readRoute = () => (window.location.hash.startsWith('#/') ? window.location.hash : '')
+
+function useHashRoute() {
+  const [route, setRoute] = useState(readRoute)
+  useEffect(() => {
+    const onHashChange = () => setRoute(readRoute())
+    window.addEventListener('hashchange', onHashChange)
+    return () => window.removeEventListener('hashchange', onHashChange)
+  }, [])
+  return route
+}
+
+const sectionHrefs = ['#home', ...new Set(flattenHrefs(navigation).filter((href) => href.startsWith('#') && !href.startsWith('#/')))]
+
+const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`
+
+function ExternalAwareLink({ href, className, children }: { href: string; className?: string; children: ReactNode }) {
+  const external = isExternal(href)
   return (
-    <a className="brand" href="#home" aria-label="AAVL home">
-      <span className="brand-mark" aria-hidden="true">
-        <span>A</span>
-      </span>
+    <a href={href} className={className} target={external ? '_blank' : undefined} rel={external ? 'noreferrer' : undefined}>
+      {children}
+    </a>
+  )
+}
+
+function Logo({ inverse = false }: { inverse?: boolean }) {
+  return (
+    <a className={`brand ${inverse ? 'brand--inverse' : ''}`} href="#home" aria-label="Aggarwal & Aggarwal Ventures home">
+      <span className="brand-mark" aria-hidden="true">A</span>
       <span className="brand-copy">
-        <strong>{siteData.company.shortName}</strong>
-        <small>Aggarwal & Aggarwal Ventures</small>
+        <strong>Aggarwal &amp; Aggarwal</strong>
+        <small>Business Partner | Mirae Asset Sharekhan</small>
       </span>
     </a>
   )
 }
 
-function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: () => void }) {
+function NoticeTicker() {
+  // Rendered twice so the marquee can loop seamlessly; the copy is hidden from assistive tech.
+  const items = (hidden: boolean) => (
+    <div className="ticker-group" aria-hidden={hidden || undefined}>
+      {siteData.tickerNotices.map((notice) => (
+        <span key={notice}>{notice}</span>
+      ))}
+    </div>
+  )
+  return (
+    <div className="ticker" role="region" aria-label="Investor notices">
+      <div className="ticker-label"><span className="pulse-dot" aria-hidden="true" /> Investor Alerts</div>
+      <div className="ticker-track">
+        <div className="ticker-marquee">{items(false)}{items(true)}</div>
+      </div>
+      <a className="ticker-end" href={pages.investorCharter}>Investor Charter <ChevronRight size={13} /></a>
+    </div>
+  )
+}
+
+function Header({ route }: { route: string }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
   const reduceMotion = useReducedMotion()
 
   useEffect(() => {
-    const sections = siteData.nav
-      .map((item) => document.querySelector(item.href))
+    if (route) return
+    const sections = sectionHrefs
+      .map((href) => document.querySelector(href))
       .filter((section): section is Element => Boolean(section))
 
     const observer = new IntersectionObserver(
@@ -83,7 +129,9 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
 
     sections.forEach((section) => observer.observe(section))
     return () => observer.disconnect()
-  }, [])
+  }, [route])
+
+  useEffect(() => setMenuOpen(false), [route])
 
   useEffect(() => {
     document.body.style.overflow = menuOpen ? 'hidden' : ''
@@ -95,44 +143,29 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    <header className="site-header">
-      <div className="container header-inner">
-        <Logo />
-        <nav className="desktop-nav" aria-label="Primary navigation">
-          {siteData.nav.map((item) => (
-            <a
-              key={item.href}
-              href={item.href}
-              className={activeSection === item.href.slice(1) ? 'active' : ''}
-              aria-current={activeSection === item.href.slice(1) ? 'page' : undefined}
+    <div className="site-top">
+      <NoticeTicker />
+      <header className="site-header">
+        <div className="container header-inner">
+          <Logo />
+          <DesktopNav items={navigation} currentHash={route || `#${activeSection}`} />
+          <div className="header-actions">
+            <a className="header-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
+            <NeuButton href="#contact" variant="primary" className="header-cta">
+              <UserPlus size={17} /> Open Demat Account
+            </NeuButton>
+            <button
+              className="icon-button menu-button"
+              onClick={() => setMenuOpen((value) => !value)}
+              aria-expanded={menuOpen}
+              aria-controls="mobile-navigation"
+              aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
             >
-              {item.label}
-            </a>
-          ))}
-        </nav>
-        <div className="header-actions">
-          <button
-            className="icon-button"
-            onClick={toggleTheme}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? <Moon size={19} /> : <Sun size={19} />}
-          </button>
-          <NeuButton href="#contact" variant="primary" className="header-cta">
-            Open Demat Account
-          </NeuButton>
-          <button
-            className="icon-button menu-button"
-            onClick={() => setMenuOpen((value) => !value)}
-            aria-expanded={menuOpen}
-            aria-controls="mobile-navigation"
-            aria-label={menuOpen ? 'Close navigation menu' : 'Open navigation menu'}
-          >
-            {menuOpen ? <X size={22} /> : <Menu size={22} />}
-          </button>
+              {menuOpen ? <X size={22} /> : <Menu size={22} />}
+            </button>
+          </div>
         </div>
-      </div>
+      </header>
       <AnimatePresence>
         {menuOpen ? (
           <motion.nav
@@ -145,130 +178,149 @@ function Header({ theme, toggleTheme }: { theme: 'light' | 'dark'; toggleTheme: 
             transition={{ duration: 0.2 }}
           >
             <div className="container mobile-nav-inner">
-              {siteData.nav.map((item) => (
-                <a key={item.href} href={item.href} onClick={closeMenu}>
-                  {item.label}
-                  <ChevronRight size={18} />
-                </a>
-              ))}
+              <MobileNavList items={navigation} onNavigate={closeMenu} />
               <NeuButton href="#contact" variant="primary" onClick={closeMenu}>
                 Open Demat Account <ArrowRight size={18} />
               </NeuButton>
+              <a className="mobile-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
             </div>
           </motion.nav>
         ) : null}
       </AnimatePresence>
-    </header>
+    </div>
   )
 }
 
-function HeroChart() {
-  return (
-    <NeuCard className="hero-visual" aria-label="Illustrative upward market chart">
-      <div className="chart-header">
-        <div>
-          <span className="chart-kicker">AAVL MARKET ACCESS</span>
-          <strong>Clarity at every step</strong>
-        </div>
-        <span className="chart-status"><span /> Platform access</span>
-      </div>
-      <div className="chart-canvas">
-        <div className="chart-grid" aria-hidden="true" />
-        <svg viewBox="0 0 560 270" role="img" aria-labelledby="chart-title chart-description">
-          <title id="chart-title">Illustrative rising line chart</title>
-          <desc id="chart-description">A decorative line illustrating long-term financial progress. It is not market data.</desc>
-          <defs>
-            <linearGradient id="areaFill" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.28" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          <path className="chart-area" d="M18 230 C88 190 101 211 158 158 S255 190 311 124 S400 120 449 72 S509 76 542 30 L542 255 L18 255 Z" />
-          <path className="chart-line" pathLength="1" d="M18 230 C88 190 101 211 158 158 S255 190 311 124 S400 120 449 72 S509 76 542 30" />
-          <circle className="chart-dot" cx="542" cy="30" r="7" />
-        </svg>
-      </div>
-      <div className="chart-footer">
-        <span><BadgeCheck size={17} /> Regulated access</span>
-        <span>Illustrative only • Not market data</span>
-      </div>
-    </NeuCard>
-  )
-}
+const registrationCards = [
+  {
+    tag: 'NSE Authorised Person',
+    title: 'National Stock Exchange',
+    number: 'AP2069592873',
+    badge: 'CM & F&O',
+    meta: 'Appointed 19 Jun 2026',
+    file: '/documents/nse-ap-certificate.pdf',
+  },
+  {
+    tag: 'BSE Authorised Person',
+    title: 'BSE Limited',
+    number: 'AP01074801179851',
+    badge: 'Cash & Eq. Derivatives',
+    meta: 'Approved 29 Jul 2026',
+    file: '/documents/bse-ap-certificate.pdf',
+  },
+  {
+    tag: 'Stock broker',
+    title: 'Sharekhan Ltd. – SEBI Reg.',
+    number: 'INZ000171337',
+    badge: 'BSE • NSE • MCX',
+    meta: 'NSE 10733 • BSE 748',
+    file: '/documents/sharekhan-certificate-2026.pdf',
+  },
+]
 
 function Hero() {
   return (
-    <section id="home" className="hero section-shell" aria-labelledby="hero-heading">
-      <div className="container hero-grid">
-        <div className="hero-copy">
-          <p className="eyebrow">{siteData.hero.eyebrow}</p>
-          <h1 id="hero-heading">{siteData.hero.title}</h1>
-          <p className="hero-description">{siteData.hero.description}</p>
-          <p className="partner-line">{siteData.company.partnerLine}</p>
-          <div className="hero-actions">
-            <NeuButton href="#contact" variant="primary">
-              Open an account <ArrowRight size={18} />
-            </NeuButton>
-            <NeuButton href="#contact" variant="secondary">
-              Contact us
-            </NeuButton>
+    <section id="home" className="hero" aria-labelledby="hero-heading">
+      <div className="dot-grid" aria-hidden="true" />
+      <div className="container hero-inner">
+        <div className="pill-row" aria-label="Registrations">
+          <span className="pill pill--strong"><BadgeCheck size={16} /> Authorised Person of Mirae Asset Sharekhan</span>
+          <span className="pill"><span className="pill-square pill-square--gold" /> SEBI Broker Partner: INZ000171337</span>
+          <span className="pill"><span className="pill-square" /> NSE: AP2069592873 | BSE: AP01074801179851</span>
+        </div>
+        <div className="hero-grid">
+          <div className="hero-copy">
+            <h1 id="hero-heading">
+              {siteData.hero.titleLead}
+              <br />
+              <span>{siteData.hero.titleAccent}</span>
+            </h1>
+            <p className="hero-description">{siteData.hero.description}</p>
+            <div className="hero-actions">
+              <NeuButton href="#contact" variant="primary">
+                Open Demat Account <ArrowRight size={18} className="icon-gold" />
+              </NeuButton>
+              <NeuButton href="#downloads" variant="secondary">
+                <Download size={17} /> Download Documents
+              </NeuButton>
+              <a className="hero-phone" href={telHref(siteData.company.phone)}><Phone size={18} /> {siteData.company.phone}</a>
+            </div>
+            <dl className="hero-stats">
+              {siteData.hero.stats.map((stat) => (
+                <div key={stat.label}>
+                  <dt>{stat.label}</dt>
+                  <dd className={'accent' in stat ? 'is-accent' : ''}>{stat.value}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-          <div className="trust-row" aria-label="Registrations and trust markers">
-            {siteData.hero.trustBadges.map((badge) => (
-              <span key={badge}><BadgeCheck size={17} /> {badge}</span>
+          <div className="hero-cards">
+            <div className="hero-cards-head">
+              <span><span className="pulse-dot" aria-hidden="true" /> Registration snapshot</span>
+              <span>From exchange certificates</span>
+            </div>
+            {registrationCards.map((card, index) => (
+              <Reveal key={card.number} delay={index * 0.06}>
+                <NeuCard interactive className="reg-card">
+                  <div className="reg-card-top">
+                    <div>
+                      <span className="chip">{card.tag}</span>
+                      <h3>{card.title}</h3>
+                      <p className="reg-number">{card.number}</p>
+                    </div>
+                    <div className="reg-card-side">
+                      <span className="status-badge">{card.badge}</span>
+                      <p>{card.meta}</p>
+                    </div>
+                  </div>
+                  <div className="reg-card-foot">
+                    <span><ShieldCheck size={15} /> Active registration</span>
+                    <a href={card.file} target="_blank" rel="noreferrer">View certificate <ChevronRight size={15} /></a>
+                  </div>
+                </NeuCard>
+              </Reveal>
             ))}
           </div>
         </div>
-        <Reveal delay={0.1}>
-          <HeroChart />
-        </Reveal>
-      </div>
-      <div className="container regulation-strip" aria-label="Registration summary">
-        <div><span>NSE AP</span><strong>AP2069592873</strong></div>
-        <div><span>BSE AP</span><strong>AP01074801179851</strong></div>
-        <div><span>Sharekhan SEBI Reg.</span><strong>INZ000171337</strong></div>
       </div>
     </section>
   )
 }
 
 function About() {
-  const icons = [UsersRound, Scale, ShieldCheck, MapPin]
+  const icons = [Gavel, MonitorSmartphone, Building2, Layers]
   return (
-    <section id="about" className="section-shell" aria-labelledby="about-title">
-      <div className="container">
-        <SectionTitle
-          eyebrow="About AAVL"
-          title="Local support. Established market infrastructure."
-          description={siteData.about.body}
-        />
-        <div className="about-grid">
-          <Reveal>
-            <NeuCard className="mission-card">
-              <span className="icon-tile"><ClipboardCheck size={25} /></span>
-              <p className="card-label">Our mission</p>
-              <h3>Responsible participation, made clearer.</h3>
-              <p>{siteData.about.mission}</p>
-              <div className="incorporation-line">
-                <Building2 size={18} />
-                <span><strong>Incorporated {siteData.company.incorporated}</strong><br />{siteData.company.legalForm}</span>
-              </div>
-            </NeuCard>
-          </Reveal>
-          <div className="reason-grid">
-            {siteData.about.reasons.map((reason, index) => {
-              const Icon = icons[index]
-              return (
-                <Reveal key={reason.title} delay={index * 0.05}>
-                  <NeuCard interactive className="reason-card">
-                    <span className="icon-tile"><Icon size={22} /></span>
-                    <h3>{reason.title}</h3>
-                    <p>{reason.text}</p>
-                  </NeuCard>
-                </Reveal>
-              )
-            })}
+    <section id="about" className="section-shell section-white" aria-labelledby="about-title">
+      <div className="container about-grid">
+        <div className="about-copy">
+          <p className="eyebrow eyebrow--line">{siteData.about.eyebrow}</p>
+          <h2 id="about-title" className="section-heading">{siteData.about.title}</h2>
+          <p className="lead">
+            {siteData.about.body} <span className="mono">CIN: {siteData.company.cin}</span>
+          </p>
+          <div className="callout">
+            <p className="callout-label">Registered office</p>
+            <p>{siteData.company.address}</p>
           </div>
+          <div className="fact-row">
+            <div><strong>10 Feb 2026</strong><span>Date of incorporation</span></div>
+            <div className="fact-divider" aria-hidden="true" />
+            <div><strong className="is-accent">NSE &amp; BSE</strong><span>Authorised Person</span></div>
+          </div>
+        </div>
+        <div className="pillar-grid">
+          {siteData.about.reasons.map((reason, index) => {
+            const Icon = icons[index]
+            return (
+              <Reveal key={reason.title} delay={index * 0.05}>
+                <NeuCard interactive className="pillar-card">
+                  <span className={`icon-tile ${index === 3 ? 'icon-tile--gold' : ''}`}><Icon size={24} /></span>
+                  <h3>{reason.title}</h3>
+                  <p>{reason.text}</p>
+                </NeuCard>
+              </Reveal>
+            )
+          })}
         </div>
       </div>
     </section>
@@ -277,29 +329,66 @@ function About() {
 
 function Services() {
   return (
-    <section id="services" className="section-shell section-tint" aria-labelledby="services-title">
+    <section id="services" className="section-shell" aria-labelledby="services-title">
       <div className="container">
         <SectionTitle
+          id="services-title"
           eyebrow="Our financial services"
-          title="A connected range of investment solutions."
-          description="Explore services offered through Mirae Asset Sharekhan, supported by our local team."
+          title="Capital market services for growth and protection."
+          description="Mirae Asset Sharekhan’s market infrastructure, with local relationship support across every segment."
         />
         <div className="services-grid">
           {siteData.services.map((service, index) => {
             const Icon = serviceIcons[service.icon] ?? ChartNoAxesCombined
+            const accent = 'accent' in service
             return (
               <Reveal key={service.title} delay={(index % 3) * 0.05}>
-                <NeuCard interactive className="service-card">
-                  <span className="service-number">0{index + 1}</span>
-                  <span className="icon-tile icon-tile--gold"><Icon size={24} /></span>
-                  <h3>{service.title}</h3>
-                  <p>{service.description}</p>
+                <NeuCard className="service-card">
+                  <div>
+                    <div className="service-card-top">
+                      <span className={`icon-tile icon-tile--soft ${accent ? 'icon-tile--gold' : ''}`}><Icon size={23} /></span>
+                      <span className={`chip ${accent ? 'chip--gold' : ''}`}>{service.tag}</span>
+                    </div>
+                    <h3>{service.title}</h3>
+                    <p>{service.description}</p>
+                    <ul className="tick-list">
+                      {service.points.map((point) => <li key={point}><Check size={15} /> {point}</li>)}
+                    </ul>
+                  </div>
+                  <a className="card-link" href={service.href}>{service.cta} <ChevronRight size={15} /></a>
                 </NeuCard>
               </Reveal>
             )
           })}
         </div>
-        <p className="service-note"><AlertTriangle size={18} /> {siteData.servicesNote}</p>
+        <p className="footnote"><strong>Regulatory footnote:</strong> {siteData.servicesNote}</p>
+      </div>
+    </section>
+  )
+}
+
+function AssociatedSites() {
+  if (!siteData.associatedSites.length) return null
+  return (
+    <section id="associated-sites" className="section-shell" aria-labelledby="associated-title">
+      <div className="container">
+        <SectionTitle id="associated-title" eyebrow="Group portals & platforms" title="Our associated websites" description="Explore our group and partner platforms." />
+        <div className="services-grid">
+          {siteData.associatedSites.map((site, index) => (
+            <NeuCard key={site.url} interactive className="service-card">
+              <div>
+                <div className="service-card-top">
+                  <span className="icon-tile icon-tile--soft icon-tile--number">{String(index + 1).padStart(2, '0')}</span>
+                  <span className="chip">{site.tag}</span>
+                </div>
+                <h3>{site.name}</h3>
+                <p>{site.description}</p>
+                <p className="mono small">{site.url.replace(/^https?:\/\//, '')}</p>
+              </div>
+              <NeuButton href={site.url} variant="secondary" target="_blank" rel="noreferrer" className="block-button">Visit website <ArrowRight size={15} /></NeuButton>
+            </NeuCard>
+          ))}
+        </div>
       </div>
     </section>
   )
@@ -307,19 +396,24 @@ function Services() {
 
 function Team() {
   return (
-    <section id="team" className="section-shell" aria-labelledby="team-title">
+    <section id="team" className="section-shell section-white" aria-labelledby="team-title">
       <div className="container">
-        <SectionTitle
-          eyebrow="Leadership & team"
-          title="Professional support across essential functions."
-          description="Experienced leadership and professionals across management, human resources, compliance, accounting, and financial analysis."
-        />
+        <div className="split-title">
+          <SectionTitle id="team-title" eyebrow="Governance & executive team" title="Experienced leadership. Accredited professionals." />
+          <p className="section-description">Leadership and professionals across management, human resources, compliance, accounting and financial analysis.</p>
+        </div>
         <div className="team-grid">
           {siteData.team.map((member, index) => (
             <Reveal key={member.name} delay={(index % 3) * 0.04}>
-              <NeuCard interactive className="team-card">
-                <div className="avatar" aria-hidden="true">{member.initials}</div>
-                <div><h3>{member.name}</h3><p>{member.role}</p></div>
+              <NeuCard className="team-card">
+                <div className="team-card-head">
+                  <div className={`avatar ${index % 3 === 2 || index === 3 ? 'avatar--navy' : ''}`} aria-hidden="true">{member.initials}</div>
+                  <div><h3>{member.name}</h3><p>{member.role}</p></div>
+                </div>
+                <div className="team-card-body">
+                  <p className="micro-label">Focus areas</p>
+                  <p>{member.focus}</p>
+                </div>
               </NeuCard>
             </Reveal>
           ))}
@@ -331,41 +425,53 @@ function Team() {
 
 function Compliance() {
   return (
-    <section id="compliance" className="section-shell section-tint" aria-labelledby="compliance-title">
+    <section id="compliance" className="section-shell" aria-labelledby="compliance-title">
       <div className="container">
         <SectionTitle
-          eyebrow="Registration & compliance"
-          title="Credentials you can verify."
-          description="Registration details are taken from the supplied company, NSE, BSE and Sharekhan documents."
+          id="compliance-title"
+          eyebrow="Verified statutory matrix"
+          title="Regulatory registration & exchange authorisations."
+          description="Corporate identity and exchange authorisations, taken from the company, NSE, BSE and Sharekhan documents."
         />
         <div className="compliance-grid">
-          <NeuCard className="registration-card" inset>
-            <div className="card-heading"><span className="icon-tile"><FileCheck2 size={23} /></span><h3>Registration details</h3></div>
-            <dl className="registration-list">
-              {siteData.registrations.map((item) => (
-                <div key={item.label}>
-                  <dt>{item.label}</dt>
-                  <dd>{item.value}{'meta' in item ? <small>{item.meta}</small> : null}</dd>
+          <NeuCard className="ledger">
+            <div className="ledger-head">
+              <span>Official verification ledger</span>
+              <span className="chip chip--gold-solid">Status: Active &amp; approved</span>
+            </div>
+            <dl className="ledger-rows">
+              {siteData.registrations.map((row) => (
+                <div key={row.label}>
+                  <dt>{row.label}{row.sub ? <small>{row.sub}</small> : null}</dt>
+                  <dd className={row.tone ? `tone-${row.tone}` : ''}>
+                    {row.value}
+                    {row.meta ? <small>{row.meta}</small> : null}
+                  </dd>
                 </div>
               ))}
             </dl>
-            <p className="mcx-note">MCX registration is not applicable to this Authorised Person.</p>
           </NeuCard>
-          <div className="certificate-grid">
-            {siteData.certificates.map((certificate) => (
-              <a key={certificate.title} href={certificate.file} target="_blank" rel="noreferrer" className="certificate-link">
-                <NeuCard interactive className="certificate-card">
-                  <div className="certificate-image-wrap">
-                    <img src={certificate.image} alt={certificate.alt} loading="lazy" />
-                  </div>
-                  <div className="certificate-copy">
-                    <p>{certificate.issuedBy}</p>
-                    <h3>{certificate.title}</h3>
-                    <span>Open PDF <ExternalLink size={15} /></span>
-                  </div>
-                </NeuCard>
-              </a>
-            ))}
+          <div className="compliance-side">
+            <NeuCard className="doc-card">
+              <h3>Statutory certificate files</h3>
+              <p>Official documents verifying our registrations.</p>
+              <ul className="doc-list">
+                {siteData.certificates.map((certificate) => (
+                  <li key={certificate.title}>
+                    <FileCheck2 size={22} />
+                    <div><strong>{certificate.title}</strong><span>{certificate.issuedBy} • PDF</span></div>
+                    <a href={certificate.file} target="_blank" rel="noreferrer" aria-label={`View ${certificate.title}`} title="View"><Eye size={18} /></a>
+                    <a href={certificate.file} download aria-label={`Download ${certificate.title}`} title="Download"><Download size={18} /></a>
+                  </li>
+                ))}
+              </ul>
+              <p className="fine-print">Tax identifiers (PAN/TAN) are not displayed. You can verify Authorised Person registrations on the NSE and BSE websites.</p>
+            </NeuCard>
+            <div className="safety-card">
+              <p><ShieldCheck size={19} /> Investor fund safety</p>
+              <span>We never accept cash or transfers to third-party accounts. All funds must move from your registered bank account directly to Sharekhan Limited.</span>
+              <a href={pages.fundTransfer}>Fund transfer guidance <ChevronRight size={14} /></a>
+            </div>
           </div>
         </div>
       </div>
@@ -375,23 +481,15 @@ function Compliance() {
 
 function ImportantLinks() {
   return (
-    <div className="investor-panel" aria-labelledby="important-links-title">
-      <div className="subsection-heading">
-        <span className="icon-tile"><ExternalLink size={22} /></span>
-        <div><p className="card-label">Official resources</p><h3 id="important-links-title">Important links</h3></div>
-      </div>
-      <div className="important-links-grid">
-        {siteData.importantLinks.map((link) =>
-          link.href ? (
-            <a key={link.label} href={link.href} target="_blank" rel="noreferrer" className="important-link">
-              <span>{link.label}</span><ChevronRight size={18} />
-            </a>
-          ) : (
-            <div key={link.label} className="important-link important-link--pending" aria-label={`${link.label}: ${link.status}`}>
-              <span>{link.label}<small>{link.status}</small></span><span className="pending-dot" />
-            </div>
-          ),
-        )}
+    <div id="important-links" className="corner-block">
+      <h3 className="block-heading"><ArrowRight size={17} /> Official regulatory portals &amp; important links</h3>
+      <div className="portal-grid">
+        {siteData.importantLinks.map((link) => (
+          <ExternalAwareLink key={link.label} href={link.href} className="portal-link">
+            <strong>{link.label}</strong>
+            <span>{link.caption}</span>
+          </ExternalAwareLink>
+        ))}
       </div>
     </div>
   )
@@ -399,102 +497,141 @@ function ImportantLinks() {
 
 function DosAndDonts() {
   return (
-    <div className="investor-panel" aria-labelledby="dos-title">
-      <div className="subsection-heading">
-        <span className="icon-tile"><ShieldCheck size={22} /></span>
-        <div><p className="card-label">Investor awareness</p><h3 id="dos-title">Do’s & don’ts</h3></div>
-      </div>
-      <div className="dos-grid">
-        <NeuCard inset className="advice-card advice-card--do">
-          <h4><Check size={20} /> Do</h4>
-          <ul>{siteData.dos.map((item) => <li key={item}>{item}</li>)}</ul>
-        </NeuCard>
-        <NeuCard inset className="advice-card advice-card--dont">
-          <h4><X size={20} /> Don’t</h4>
-          <ul>{siteData.donts.map((item) => <li key={item}>{item}</li>)}</ul>
-        </NeuCard>
-      </div>
+    <div id="dos-and-donts" className="corner-block dos-grid">
+      <NeuCard className="advice-card advice-card--do">
+        <h3><span className="advice-badge"><Check size={17} /></span> Investor DOs</h3>
+        <ol>{siteData.dos.map((item) => <li key={item}>{item}</li>)}</ol>
+      </NeuCard>
+      <NeuCard className="advice-card advice-card--dont">
+        <h3><span className="advice-badge"><X size={17} /></span> Investor DON’Ts</h3>
+        <ol>{siteData.donts.map((item) => <li key={item}>{item}</li>)}</ol>
+      </NeuCard>
     </div>
   )
 }
 
 function HolidayList() {
   return (
-    <div className="investor-panel" aria-labelledby="holiday-title">
-      <div className="subsection-heading">
-        <span className="icon-tile"><CalendarDays size={22} /></span>
-        <div><p className="card-label">2026 calendar</p><h3 id="holiday-title">Depository services holidays</h3></div>
+    <NeuCard className="corner-block holiday-card">
+      <div id="holidays" className="holiday-head">
+        <div>
+          <p className="micro-label micro-label--gold">Depository services schedule</p>
+          <h3>2026 holiday list – Mirae Asset Sharekhan</h3>
+        </div>
+        <span className="chip">{siteData.holidays.length} holidays</span>
       </div>
-      <div className="holiday-table-wrap">
-        <table>
-          <caption className="sr-only">Mirae Asset Sharekhan depository services holiday list for 2026</caption>
-          <thead><tr><th>Date</th><th>Day</th><th>Occasion</th></tr></thead>
-          <tbody>
-            {siteData.holidays.map((holiday) => (
-              <tr key={`${holiday.date}-${holiday.occasion}`}><td>{holiday.date}</td><td>{holiday.day}</td><td>{holiday.occasion}</td></tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="table-note">{siteData.holidayNote}</p>
-    </div>
+      <ul className="holiday-grid">
+        {siteData.holidays.map((holiday) => (
+          <li key={`${holiday.date}-${holiday.occasion}`}>
+            <span>{holiday.date} 2026 ({holiday.day.slice(0, 3)})</span>
+            <strong>{holiday.occasion}</strong>
+          </li>
+        ))}
+      </ul>
+      <p className="holiday-note"><strong>Note:</strong> {siteData.holidayNote}</p>
+    </NeuCard>
   )
 }
 
 function Grievance() {
   return (
-    <div className="investor-panel" aria-labelledby="grievance-title">
-      <div className="subsection-heading">
-        <span className="icon-tile"><Scale size={22} /></span>
-        <div><p className="card-label">Escalation pathway</p><h3 id="grievance-title">Investor grievance redressal</h3></div>
+    <div id="grievance" className="corner-block grievance-panel">
+      <div className="grievance-intro">
+        <p className="micro-label micro-label--gold">Escalation workflow</p>
+        <h3>5-tier investor grievance redressal mechanism</h3>
+        <p>Raise your complaint at the first level, and escalate step by step if it is not resolved. Keep copies of correspondence and reference numbers at each stage.</p>
       </div>
       <ol className="grievance-steps">
         {siteData.grievanceSteps.map((item, index) => (
-          <li key={item.step}>
-            <span className="step-number">{item.step}</span>
-            <div><h4>{item.title}</h4>{'href' in item ? <a href={item.href} target={item.href.startsWith('http') ? '_blank' : undefined} rel="noreferrer">{item.detail}</a> : <p>{item.detail}</p>}</div>
-            {index < siteData.grievanceSteps.length - 1 ? <ChevronRight className="step-arrow" size={19} aria-hidden="true" /> : null}
+          <li key={item.title} className={'accent' in item ? 'is-accent' : ''}>
+            <span className="step-number">{index + 1}</span>
+            <h4>{item.title}</h4>
+            <p>{item.text}</p>
+            <div className="step-lines">
+              {item.lines.map((line) => <ExternalAwareLink key={line.label} href={line.href}>{line.label}</ExternalAwareLink>)}
+              {'note' in item ? <span className="step-note">{item.note}</span> : null}
+            </div>
           </li>
         ))}
       </ol>
-      <p className="table-note">Keep copies of correspondence and reference numbers at each stage of escalation.</p>
-    </div>
-  )
-}
-
-function Downloads() {
-  return (
-    <div className="investor-panel" aria-labelledby="downloads-title">
-      <div className="subsection-heading">
-        <span className="icon-tile"><Download size={22} /></span>
-        <div><p className="card-label">Document library</p><h3 id="downloads-title">Certificates & investor resources</h3></div>
-      </div>
-      <div className="download-grid">
-        {siteData.downloads.map((document) => (
-          <a key={document.label} href={document.file} target="_blank" rel="noreferrer" className="download-link">
-            <FileCheck2 size={20} /><span>{document.label}</span><Download size={17} />
-          </a>
-        ))}
-      </div>
+      <a className="card-link" href={pages.investorComplaints}>All grievance contact points <ChevronRight size={15} /></a>
     </div>
   )
 }
 
 function InvestorCorner() {
   return (
-    <section id="investor-corner" className="section-shell" aria-labelledby="investor-title">
+    <section id="investor-corner" className="section-shell section-white" aria-labelledby="investor-title">
       <div className="container">
-        <SectionTitle
-          eyebrow="Investor corner"
-          title="Know the process. Know your rights."
-          description="Official links, investor awareness material, the 2026 holiday calendar and a clear grievance escalation path."
-        />
-        <div className="investor-stack">
-          <Reveal><ImportantLinks /></Reveal>
-          <Reveal><DosAndDonts /></Reveal>
-          <Reveal><HolidayList /></Reveal>
-          <Reveal><Grievance /></Reveal>
-          <Reveal><Downloads /></Reveal>
+        <div className="split-title">
+          <SectionTitle
+            id="investor-title"
+            eyebrow="Investor protection & education"
+            title="Investor Corner & statutory guidelines."
+            description="Official portals, exchange-mandated guidance, the 2026 holiday calendar and a clear grievance escalation path."
+          />
+          <NeuButton href={pages.investorCharter} variant="secondary"><FileText size={17} /> Read the Investor Charter</NeuButton>
+        </div>
+        <ImportantLinks />
+        <DosAndDonts />
+        <HolidayList />
+        <Grievance />
+      </div>
+    </section>
+  )
+}
+
+function Downloads() {
+  const [category, setCategory] = useState<string>(siteData.downloadCategories[0].id)
+  const documents = siteData.downloads.filter((document) => document.category === category)
+  const [selectedFile, setSelectedFile] = useState<string>(documents[0].file)
+  const selected = siteData.downloads.find((document) => document.file === selectedFile) ?? documents[0]
+
+  const changeCategory = (value: string) => {
+    setCategory(value)
+    setSelectedFile(siteData.downloads.find((document) => document.category === value)!.file)
+  }
+
+  return (
+    <section id="downloads" className="section-shell section-soft" aria-labelledby="downloads-title">
+      <div className="container">
+        <SectionTitle id="downloads-title" eyebrow="Statutory & onboarding resources" title="Download documents." description="Select a document to view or download." />
+        <NeuCard className="download-picker">
+          <div className="form-grid">
+            <label>
+              <span>Document category</span>
+              <select value={category} onChange={(event) => changeCategory(event.target.value)}>
+                {siteData.downloadCategories.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+              </select>
+            </label>
+            <label>
+              <span>Select document</span>
+              <select value={selected.file} onChange={(event) => setSelectedFile(event.target.value)}>
+                {documents.map((document) => <option key={document.file} value={document.file}>{document.label}</option>)}
+              </select>
+            </label>
+          </div>
+          <div className="download-preview" aria-live="polite">
+            <div className="download-preview-info">
+              <span className="icon-tile icon-tile--soft"><FileText size={21} /></span>
+              <div>
+                <p>{selected.label}</p>
+                <span>Format: PDF • {selected.source} • <em>Official copy</em></span>
+              </div>
+            </div>
+            <div className="download-preview-actions">
+              <NeuButton href={selected.file} variant="secondary" target="_blank" rel="noreferrer"><Eye size={16} /> View</NeuButton>
+              <NeuButton href={selected.file} variant="primary" download><Download size={16} /> Download</NeuButton>
+            </div>
+          </div>
+        </NeuCard>
+        <h3 className="block-heading"><Star size={17} /> All downloads</h3>
+        <div className="download-grid">
+          {siteData.downloads.map((document) => (
+            <a key={document.file} href={document.file} download className="download-link">
+              <FileText size={21} /><span>{document.label}</span><Download size={17} />
+            </a>
+          ))}
         </div>
       </div>
     </section>
@@ -506,10 +643,11 @@ type FormFields = {
   phone: string
   email: string
   interest: string
+  city: string
   message: string
 }
 
-const emptyForm: FormFields = { name: '', phone: '', email: '', interest: 'Demat Account', message: '' }
+const emptyForm: FormFields = { name: '', phone: '', email: '', interest: '', city: '', message: '' }
 
 function ContactForm() {
   const [form, setForm] = useState<FormFields>(emptyForm)
@@ -522,7 +660,7 @@ function ContactForm() {
 
     const subject = encodeURIComponent(`${form.interest} enquiry from ${form.name}`)
     const body = encodeURIComponent(
-      `Name: ${form.name}\nPhone: ${form.phone}\nEmail: ${form.email}\nInterest: ${form.interest}\n\nMessage:\n${form.message || 'No additional message.'}`,
+      `Name: ${form.name}\nPhone: +91 ${form.phone}\nEmail: ${form.email}\nInterest: ${form.interest}\nCity / area: ${form.city || '-'}\n\nMessage:\n${form.message || 'No additional message.'}`,
     )
     setSubmitted(true)
     window.location.href = `mailto:${siteData.company.email}?subject=${subject}&body=${body}`
@@ -531,20 +669,39 @@ function ContactForm() {
   const update = (field: keyof FormFields, value: string) => setForm((current) => ({ ...current, [field]: value }))
 
   return (
-    <NeuCard className="contact-form-card">
-      <div className="form-heading"><p className="card-label">Start a conversation</p><h3>How can we help?</h3><p>Submitting opens your email app with the details pre-filled.</p></div>
-      <form onSubmit={handleSubmit} noValidate={false}>
+    <NeuCard id="contact-form" className="contact-form-card">
+      <div className="form-heading">
+        <h3>Open account / request a callback</h3>
+        <p>Fill in your details. Submitting opens your email app with the enquiry pre-filled.</p>
+      </div>
+      <form onSubmit={handleSubmit}>
         <div className="form-grid">
-          <label><span>Name</span><input required minLength={2} autoComplete="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="Your full name" /></label>
-          <label><span>Phone</span><input required type="tel" inputMode="tel" autoComplete="tel" pattern="[0-9+() -]{7,18}" value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="Your phone number" /></label>
-          <label><span>Email</span><input required type="email" autoComplete="email" value={form.email} onChange={(event) => update('email', event.target.value)} placeholder="you@example.com" /></label>
-          <label><span>Interested in</span><select value={form.interest} onChange={(event) => update('interest', event.target.value)}>{siteData.interests.map((interest) => <option key={interest}>{interest}</option>)}</select></label>
+          <label><span>Full name (as per PAN) *</span><input required minLength={2} autoComplete="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. Rajesh Kumar" /></label>
+          <label>
+            <span>10-digit mobile number *</span>
+            <span className="input-prefix"><span>+91</span><input required type="tel" inputMode="numeric" autoComplete="tel-national" pattern="[0-9]{10}" value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="9876543210" /></span>
+          </label>
+          <label><span>Email address *</span><input required type="email" autoComplete="email" value={form.email} onChange={(event) => update('email', event.target.value)} placeholder="you@example.com" /></label>
+          <label>
+            <span>Primary service of interest *</span>
+            <select required value={form.interest} onChange={(event) => update('interest', event.target.value)}>
+              <option value="" disabled>Select an option…</option>
+              {siteData.interests.map((interest) => <option key={interest}>{interest}</option>)}
+            </select>
+          </label>
         </div>
-        <label><span>Message <small>(optional)</small></span><textarea rows={5} maxLength={1000} value={form.message} onChange={(event) => update('message', event.target.value)} placeholder="Tell us what you would like to discuss" /></label>
-        <div className="form-footer">
-          <NeuButton type="submit" variant="primary">Prepare email <ArrowRight size={18} /></NeuButton>
-          {submitted ? <p className="form-status" role="status"><Check size={17} /> Your email app should open now.</p> : <p>We do not ask for passwords, OTPs or trading credentials.</p>}
-        </div>
+        <label><span>City / residential area</span><input autoComplete="address-level2" value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Rohini, New Delhi" /></label>
+        <label><span>Message (optional)</span><textarea rows={3} maxLength={1000} value={form.message} onChange={(event) => update('message', event.target.value)} placeholder="Tell us what you would like to discuss" /></label>
+        <label className="consent">
+          <input type="checkbox" required />
+          <span>I consent to be contacted by Aggarwal &amp; Aggarwal Ventures Pvt. Ltd. (Authorised Person of Sharekhan Limited) by call, SMS or WhatsApp about my enquiry.</span>
+        </label>
+        <NeuButton type="submit" variant="primary" className="block-button"><Send size={17} /> Submit enquiry</NeuButton>
+        {submitted ? (
+          <p className="form-status" role="status"><Check size={17} /> Your email app should open now.</p>
+        ) : (
+          <p className="form-hint">We never ask for passwords, OTPs or trading credentials.</p>
+        )}
       </form>
     </NeuCard>
   )
@@ -553,18 +710,28 @@ function ContactForm() {
 function Contact() {
   const mapQuery = encodeURIComponent(siteData.company.address)
   return (
-    <section id="contact" className="section-shell section-tint" aria-labelledby="contact-title">
+    <section id="contact" className="section-shell" aria-labelledby="contact-title">
       <div className="container">
-        <SectionTitle eyebrow="Contact" title="Let’s make your next step clearer." description="Connect with our Delhi office for account opening, product information or service support." />
+        <SectionTitle id="contact-title" eyebrow="Office desk & onboarding" title="Consultation desk & account opening." description="Visit our Delhi office or send us an enquiry for account opening, product information or service support." />
         <div className="contact-grid">
           <Reveal><ContactForm /></Reveal>
           <div className="contact-side">
-            <div className="contact-card-grid">
-              <NeuCard className="contact-card"><span className="icon-tile"><MapPin size={21} /></span><div><p>Registered office</p><address>{siteData.company.address}</address></div></NeuCard>
-              <NeuCard className="contact-card"><span className="icon-tile"><Phone size={21} /></span><div><p>Call us</p><a href={`tel:${siteData.company.phone.replace(/\s/g, '')}`}>{siteData.company.phone}</a><a href={`tel:${siteData.company.terminalPhone.replace(/\s/g, '')}`}>{siteData.company.terminalPhone}</a></div></NeuCard>
-              <NeuCard className="contact-card"><span className="icon-tile"><Mail size={21} /></span><div><p>Email</p><a href={`mailto:${siteData.company.email}`}>{siteData.company.email}</a><a href={`mailto:${siteData.company.grievanceEmail}`}>Investor grievance</a></div></NeuCard>
-            </div>
-            <NeuCard inset className="map-card">
+            <NeuCard className="office-card">
+              <p className="micro-label micro-label--gold">Registered office</p>
+              <h3>North West Delhi office</h3>
+              <ul>
+                <li><MapPin size={19} /><address>{siteData.company.address}</address></li>
+                <li>
+                  <Phone size={19} />
+                  <div><a className="strong" href={telHref(siteData.company.phone)}>{siteData.company.phone}</a><a href={telHref(siteData.company.terminalPhone)}>{siteData.company.terminalPhone}</a></div>
+                </li>
+                <li>
+                  <Mail size={19} />
+                  <div><a className="strong" href={`mailto:${siteData.company.email}`}>{siteData.company.email}</a><a href={`mailto:${siteData.company.grievanceEmail}`}>{siteData.company.grievanceEmail}</a></div>
+                </li>
+              </ul>
+            </NeuCard>
+            <div className="map-card">
               <iframe
                 title="Map showing the registered office in Sector-3, Naharpur, Delhi"
                 src={`https://www.google.com/maps?q=${mapQuery}&output=embed`}
@@ -572,7 +739,12 @@ function Contact() {
                 referrerPolicy="no-referrer-when-downgrade"
                 allowFullScreen
               />
-            </NeuCard>
+              <a href={`https://www.google.com/maps/search/?api=1&query=${mapQuery}`} target="_blank" rel="noreferrer">Get directions <ArrowRight size={14} /></a>
+            </div>
+            <div className="cta-band">
+              <div><strong>Ready to open your account?</strong><span>We’ll guide you through Sharekhan’s account opening and KYC.</span></div>
+              <a href="#contact-form">Begin</a>
+            </div>
           </div>
         </div>
       </div>
@@ -581,22 +753,55 @@ function Contact() {
 }
 
 function Footer() {
-  const validImportantLinks = siteData.importantLinks.filter((link) => link.href).slice(0, 5)
   return (
     <footer className="site-footer">
-      <div className="container footer-top">
-        <div className="footer-brand"><Logo /><p>{siteData.company.partnerLine}. Personal support from our registered office in Delhi.</p><p className="cin">CIN: {siteData.company.cin}</p></div>
-        <div className="footer-column"><h2>Quick links</h2>{siteData.nav.slice(1).map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}</div>
-        <div className="footer-column"><h2>Important links</h2>{validImportantLinks.map((link) => <a key={link.href} href={link.href} target="_blank" rel="noreferrer">{link.label} <ExternalLink size={13} /></a>)}</div>
-        <div className="footer-column footer-contact"><h2>Grievance contact</h2><a href={`mailto:${siteData.company.grievanceEmail}`}>{siteData.company.grievanceEmail}</a><p>BSE: 022-22728097<br />NSE: 1800 266 0058</p><a href="https://scores.sebi.gov.in" target="_blank" rel="noreferrer">SEBI SCORES <ExternalLink size={13} /></a></div>
+      <div className="container">
+        <div className="footer-top">
+          <div className="footer-brand">
+            <p className="footer-name"><span aria-hidden="true" /> {siteData.company.legalName.replace('Private Limited', 'Pvt. Ltd.')}</p>
+            <p className="micro-label">CIN: {siteData.company.cin}</p>
+            <p>Authorised Person of Sharekhan Ltd. (Mirae Asset Sharekhan), offering equity, derivatives and investment products with personal support from our registered office in Delhi.</p>
+            <p className="footer-contact-line"><MapPin size={17} /> {siteData.company.address}</p>
+            <p className="footer-contact-line"><Phone size={17} /> <a href={telHref(siteData.company.phone)}>{siteData.company.phone}</a></p>
+          </div>
+          <div className="footer-block">
+            <h2>Registration credentials</h2>
+            <dl className="footer-table">
+              <div><dt>Stock broker SEBI Reg.</dt><dd>INZ000171337</dd></div>
+              <div><dt>NSE AP Reg. No.</dt><dd>AP2069592873 (CM, F&amp;O)</dd></div>
+              <div><dt>BSE AP Reg. No.</dt><dd>AP01074801179851 (Eq, Deriv)</dd></div>
+              <div><dt>NSE Member ID</dt><dd>10733</dd></div>
+              <div><dt>BSE Member ID</dt><dd>748</dd></div>
+            </dl>
+          </div>
+          <div className="footer-block">
+            <h2>Regulatory contacts</h2>
+            <div className="footer-box"><p>Investor grievance (AP)</p><a href={`mailto:${siteData.company.grievanceEmail}`}>{siteData.company.grievanceEmail}</a></div>
+            <div className="footer-box"><p>Sharekhan compliance officer</p><span>{siteData.sharekhan.complianceOfficer}</span><a href={`mailto:${siteData.sharekhan.complianceEmail}`}>{siteData.sharekhan.complianceEmail}</a></div>
+          </div>
+        </div>
+        <div className="footer-links">
+          <div className="footer-column"><h2>Quick links</h2>{siteData.nav.slice(1).map((link) => <a key={link.href} href={link.href}>{link.label}</a>)}</div>
+          <div className="footer-column"><h2>Investor information</h2>{Object.values(pages).map((href) => <a key={href} href={href}>{pageTitles[href]}</a>)}</div>
+          <div className="footer-column"><h2>Important links</h2>{siteData.importantLinks.map((link) => <ExternalAwareLink key={link.href} href={link.href}>{link.label}</ExternalAwareLink>)}</div>
+          <div className="footer-column"><h2>Downloads</h2>{siteData.downloads.map((document) => <a key={document.file} href={document.file} download>{document.label}</a>)}</div>
+        </div>
+        <div className="disclaimer-block" aria-label="Mandatory investor disclaimers">
+          <h2>Mandatory regulatory disclaimers</h2>
+          <div className="disclaimer-grid">
+            {siteData.disclaimers.map((disclaimer, index) => <p key={disclaimer} className={index === 0 ? 'risk-warning' : ''}><strong>{index + 1}.</strong> {disclaimer}</p>)}
+          </div>
+        </div>
+        <div className="footer-bottom">
+          <p>© 2026 {siteData.company.legalName}. All rights reserved.</p>
+          <nav aria-label="Footer">
+            <a href="#downloads">Downloads</a>
+            <a href={pages.disclaimer}>Disclaimer</a>
+            <a href={pages.investorCharter}>Investor Charter</a>
+            <a href={pages.investorComplaints}>Grievance Cell</a>
+          </nav>
+        </div>
       </div>
-      <div className="container footer-registration">
-        <p><strong>NSE AP:</strong> AP2069592873</p><p><strong>BSE AP:</strong> AP01074801179851</p><p><strong>Sharekhan SEBI Reg. No.:</strong> INZ000171337</p>
-      </div>
-      <div className="container disclaimer-block" aria-label="Mandatory investor disclaimers">
-        {siteData.disclaimers.map((disclaimer, index) => <p key={disclaimer} className={index === 0 ? 'risk-warning' : ''}>{disclaimer}</p>)}
-      </div>
-      <div className="container footer-bottom"><p>© 2026 {siteData.company.legalName}. All rights reserved.</p><p>{siteData.company.address}</p></div>
     </footer>
   )
 }
@@ -611,37 +816,58 @@ function FloatingActions() {
   }, [])
   return (
     <div className="floating-actions">
-      {showTop ? <button className="floating-button back-to-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"><ArrowUp size={20} /></button> : null}
-      <a className="floating-button whatsapp-button" href={`https://wa.me/${siteData.company.whatsapp}?text=${encodeURIComponent('Hello AAVL, I would like to know more about opening an account.')}`} target="_blank" rel="noreferrer" aria-label="Chat with AAVL on WhatsApp"><MessageCircle size={23} /></a>
+      {showTop ? <button className="back-to-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"><ArrowUp size={20} /></button> : null}
+      <a className="whatsapp-button" href={`https://wa.me/${siteData.company.whatsapp}?text=${encodeURIComponent('Hello AAVL, I would like to know more about opening an account.')}`} target="_blank" rel="noreferrer" aria-label="Chat with AAVL on WhatsApp">
+        <MessageCircle size={20} /><span>WhatsApp us</span>
+      </a>
     </div>
   )
 }
 
 function App() {
-  const initialTheme = useMemo<'light' | 'dark'>(() => {
-    const saved = localStorage.getItem('aavl-theme')
-    if (saved === 'light' || saved === 'dark') return saved
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-  }, [])
-  const [theme, setTheme] = useState<'light' | 'dark'>(initialTheme)
+  const route = useHashRoute()
 
   useEffect(() => {
-    document.documentElement.dataset.theme = theme
-    localStorage.setItem('aavl-theme', theme)
-  }, [theme])
+    document.title = route ? `${pageTitles[route] ?? 'Page not found'} | AAVL` : 'AAVL | Aggarwal & Aggarwal Ventures Private Limited'
+    if (route) {
+      window.scrollTo({ top: 0 })
+      return
+    }
+    // Coming back from a page to a home-page section: the section only exists after this render.
+    const target = window.location.hash.length > 1 ? document.querySelector(window.location.hash) : null
+    target?.scrollIntoView()
+  }, [route])
 
   return (
     <>
-      <a className="skip-link" href="#main-content">Skip to main content</a>
-      <Header theme={theme} toggleTheme={() => setTheme((value) => (value === 'light' ? 'dark' : 'light'))} />
-      <main id="main-content">
-        <Hero />
-        <About />
-        <Services />
-        <Team />
-        <Compliance />
-        <InvestorCorner />
-        <Contact />
+      <a
+        className="skip-link"
+        href="#main-content"
+        onClick={(event) => {
+          // Changing the hash would leave an inner page, so move focus directly instead.
+          event.preventDefault()
+          document.getElementById('main-content')?.focus()
+        }}
+      >
+        Skip to main content
+      </a>
+      <Header route={route} />
+      <main id="main-content" tabIndex={-1}>
+        {route ? (
+          <InfoPage route={route} />
+        ) : (
+          <>
+            <Hero />
+            <About />
+            <Services />
+            <AssociatedSites />
+            <Team />
+            <Compliance />
+            <InvestorCorner />
+            <Downloads />
+            <Contact />
+          </>
+        )}
       </main>
       <Footer />
       <FloatingActions />
