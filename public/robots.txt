@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://aavl-ventures.workspace-179604.chatgpt.site/sitemap.xml
