@@ -56,6 +56,7 @@ export const navigation: NavItem[] = [
         ],
       },
       ...siteData.services.slice(1).map((service) => ({ label: service.title, href: '#services' })),
+      { label: 'Open an Account', href: '#open-account' },
     ],
   },
   {
@@ -65,6 +66,7 @@ export const navigation: NavItem[] = [
   {
     label: 'Investor Corner',
     children: [
+      { label: 'Market Snapshot', href: '#markets' },
       { label: 'Investor Charter', href: pages.investorCharter },
       { label: 'Investor Complaints', href: pages.investorComplaints },
       { label: 'Grievance Redressal', href: '#grievance' },

@@ -74,11 +74,14 @@ export function DesktopNav({ items, currentHash }: { items: NavItem[]; currentHa
     if (document.activeElement instanceof HTMLElement) document.activeElement.blur()
   }
 
+  // A page can appear under several menus (e.g. Investor Charter); highlight only the first.
+  const activeIndex = items.findIndex((item) => flattenHrefs([item]).includes(currentHash))
+
   return (
     <nav ref={navRef} className="desktop-nav" aria-label="Primary navigation">
       <ul className="nav-menu" role="list">
         {items.map((item, index) => {
-          const active = flattenHrefs([item]).includes(currentHash)
+          const active = index === activeIndex
           const open = openIndex === index
           return (
             <li

@@ -2,19 +2,15 @@ import { FormEvent, useEffect, useState, type ReactNode } from 'react'
 import {
   ArrowRight,
   ArrowUp,
+  ArrowUpRight,
   BadgeCheck,
-  BriefcaseBusiness,
   Building2,
-  ChartNoAxesCombined,
-  ChartPie,
   Check,
   ChevronRight,
   Download,
   Eye,
-  FileCheck2,
   FileText,
   Gavel,
-  Landmark,
   Layers,
   Mail,
   MapPin,
@@ -25,29 +21,23 @@ import {
   Send,
   ShieldCheck,
   Star,
-  TrendingUp,
   UserPlus,
   X,
-  type LucideIcon,
 } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { Logo } from './components/Brand'
 import { NeuButton } from './components/NeuButton'
 import { NeuCard } from './components/NeuCard'
 import { Reveal } from './components/Reveal'
 import { SectionTitle } from './components/SectionTitle'
+import { ChartPlaceholder, DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
+import { TradingViewCredit, TradingViewWidget } from './components/TradingViewWidget'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
 import { InfoPage, pageTitles } from './pages/InfoPages'
 
-const serviceIcons: Record<string, LucideIcon> = {
-  ChartNoAxesCombined,
-  TrendingUp,
-  Landmark,
-  ShieldCheck,
-  BriefcaseBusiness,
-  ChartPie,
-}
+const { market } = siteData
 
 const readRoute = () => (window.location.hash.startsWith('#/') ? window.location.hash : '')
 
@@ -61,7 +51,18 @@ function useHashRoute() {
   return route
 }
 
-const sectionHrefs = ['#home', ...new Set(flattenHrefs(navigation).filter((href) => href.startsWith('#') && !href.startsWith('#/')))]
+function useMediaQuery(query: string) {
+  const [matches, setMatches] = useState(() => window.matchMedia(query).matches)
+  useEffect(() => {
+    const media = window.matchMedia(query)
+    const onChange = () => setMatches(media.matches)
+    media.addEventListener('change', onChange)
+    return () => media.removeEventListener('change', onChange)
+  }, [query])
+  return matches
+}
+
+const sectionHrefs =['#home', ...new Set(flattenHrefs(navigation).filter((href) => href.startsWith('#') && !href.startsWith('#/')))]
 
 const telHref = (phone: string) => `tel:${phone.replace(/[^\d+]/g, '')}`
 
@@ -74,34 +75,47 @@ function ExternalAwareLink({ href, className, children }: { href: string; classN
   )
 }
 
-function Logo({ inverse = false }: { inverse?: boolean }) {
+// Top strip: scrolling stock and index prices from TradingView (BSE data; NSE is not licensed for free widgets).
+function MarketTicker() {
   return (
-    <a className={`brand ${inverse ? 'brand--inverse' : ''}`} href="#home" aria-label="Aggarwal & Aggarwal Ventures home">
-      <span className="brand-mark" aria-hidden="true">A</span>
-      <span className="brand-copy">
-        <strong>Aggarwal &amp; Aggarwal</strong>
-        <small>Business Partner | Mirae Asset Sharekhan</small>
-      </span>
-    </a>
+    <div className="ticker">
+      <div className="ticker-label"><span className="pulse-dot" aria-hidden="true" /> Markets</div>
+      <TradingViewWidget
+        widget="ticker-tape"
+        label="Market prices: SENSEX, BSE 500, large-cap stocks, USD/INR and gold"
+        className="ticker-tape"
+        placeholder={<span className="ticker-loading">Loading market prices…</span>}
+        config={{
+          symbols: market.tickerTape,
+          showSymbolLogo: true,
+          isTransparent: true,
+          // 'regular' keeps one line per symbol (58px tall) at every width; 'adaptive' falls back to the 84px stacked layout on phones.
+          displayMode: 'regular',
+          colorTheme: 'dark',
+          locale: 'en',
+        }}
+      />
+      <a className="ticker-end" href="#markets">Market snapshot <ChevronRight size={13} /></a>
+    </div>
   )
 }
 
-function NoticeTicker() {
-  // Rendered twice so the marquee can loop seamlessly; the copy is hidden from assistive tech.
+// Investor notices band under the hero. Rendered twice so the marquee loops seamlessly; the copy is hidden from assistive tech.
+function NoticeBand() {
   const items = (hidden: boolean) => (
-    <div className="ticker-group" aria-hidden={hidden || undefined}>
+    <div className="notice-group" aria-hidden={hidden || undefined}>
       {siteData.tickerNotices.map((notice) => (
         <span key={notice}>{notice}</span>
       ))}
     </div>
   )
   return (
-    <div className="ticker" role="region" aria-label="Investor notices">
-      <div className="ticker-label"><span className="pulse-dot" aria-hidden="true" /> Investor Alerts</div>
-      <div className="ticker-track">
-        <div className="ticker-marquee">{items(false)}{items(true)}</div>
+    <div className="notice-band" role="region" aria-label="Investor notices">
+      <div className="notice-band-label"><ShieldCheck size={15} /> Investor alerts</div>
+      <div className="notice-track">
+        <div className="notice-marquee">{items(false)}{items(true)}</div>
       </div>
-      <a className="ticker-end" href={pages.investorCharter}>Investor Charter <ChevronRight size={13} /></a>
+      <a className="notice-band-end" href={pages.investorCharter}>Investor Charter <ChevronRight size={13} /></a>
     </div>
   )
 }
@@ -109,7 +123,15 @@ function NoticeTicker() {
 function Header({ route }: { route: string }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
+  const [scrolled, setScrolled] = useState(false)
   const reduceMotion = useReducedMotion()
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     if (route) return
@@ -143,8 +165,8 @@ function Header({ route }: { route: string }) {
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    <div className="site-top">
-      <NoticeTicker />
+    <div className={`site-top ${scrolled ? 'is-scrolled' : ''}`}>
+      <MarketTicker />
       <header className="site-header">
         <div className="container header-inner">
           <Logo />
@@ -180,9 +202,10 @@ function Header({ route }: { route: string }) {
             <div className="container mobile-nav-inner">
               <MobileNavList items={navigation} onNavigate={closeMenu} />
               <NeuButton href="#contact" variant="primary" onClick={closeMenu}>
-                Open Demat Account <ArrowRight size={18} />
+                Open Demat Account <ArrowRight size={18} className="btn-arrow" />
               </NeuButton>
               <a className="mobile-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
+              <p className="mobile-partner">{siteData.company.partnerLine}</p>
             </div>
           </motion.nav>
         ) : null}
@@ -218,6 +241,107 @@ const registrationCards = [
   },
 ]
 
+// Laptop + phone mockup in the spirit of a trading platform, showing real (BSE, delayed) TradingView charts.
+function DeviceStage() {
+  // The candlestick widget needs ~420px to show its price axis; phones get the compact overview chart instead.
+  const narrow = useMediaQuery('(max-width: 680px)')
+  return (
+    <div className="device-stage">
+      <div className="device-glow" aria-hidden="true" />
+      <div className="device-desktop">
+        <div className="device-bar">
+          <span className="device-dots" aria-hidden="true"><i /><i /><i /></span>
+          <span className="device-title">Market overview · S&amp;P BSE SENSEX</span>
+          <span className="device-chip"><span className="pulse-dot" aria-hidden="true" /> TradingView</span>
+        </div>
+        {narrow ? (
+          <TradingViewWidget
+            key="sensex-mini"
+            widget="mini-symbol-overview"
+            label="SENSEX three-month chart"
+            className="device-screen"
+            placeholder={<ChartPlaceholder dark />}
+            config={{
+              symbol: market.headlineSymbol,
+              width: '100%',
+              height: '100%',
+              locale: 'en',
+              dateRange: '3M',
+              colorTheme: 'dark',
+              isTransparent: true,
+              autosize: true,
+              trendLineColor: 'rgba(211, 172, 74, 1)',
+              underLineColor: 'rgba(211, 172, 74, 0.28)',
+              underLineBottomColor: 'rgba(211, 172, 74, 0)',
+            }}
+          />
+        ) : (
+          <TradingViewWidget
+            key="sensex-candles"
+            widget="advanced-chart"
+            label="SENSEX daily candlestick chart"
+            className="device-screen"
+            placeholder={<ChartPlaceholder dark />}
+            config={{
+              autosize: true,
+              symbol: market.headlineSymbol,
+              interval: 'D',
+              timezone: 'Asia/Kolkata',
+              theme: 'dark',
+              style: '1',
+              locale: 'en',
+              backgroundColor: 'rgba(28, 18, 19, 1)',
+              gridColor: 'rgba(255, 255, 255, 0.05)',
+              hide_top_toolbar: true,
+              hide_side_toolbar: true,
+              hide_volume: true,
+              allow_symbol_change: false,
+              save_image: false,
+              calendar: false,
+              support_host: 'https://www.tradingview.com',
+            }}
+          />
+        )}
+      </div>
+      <div className="device-phone">
+        <span className="device-notch" aria-hidden="true" />
+        <div className="device-phone-head">
+          <span>Watchlist</span>
+          <span>{market.phoneSymbol.label} · 1M</span>
+        </div>
+        <TradingViewWidget
+          widget="mini-symbol-overview"
+          label={`${market.phoneSymbol.label} one-month chart`}
+          className="device-phone-screen"
+          placeholder={<ChartPlaceholder dark text="Loading…" />}
+          config={{
+            symbol: market.phoneSymbol.symbol,
+            width: '100%',
+            height: '100%',
+            locale: 'en',
+            dateRange: '1M',
+            colorTheme: 'dark',
+            isTransparent: true,
+            autosize: true,
+            trendLineColor: 'rgba(211, 172, 74, 1)',
+            underLineColor: 'rgba(211, 172, 74, 0.28)',
+            underLineBottomColor: 'rgba(211, 172, 74, 0)',
+          }}
+        />
+        <div className="device-phone-actions" aria-hidden="true"><span>Sell</span><span>Buy</span></div>
+      </div>
+      <div className="float-card float-card--top">
+        <span className="float-icon"><BadgeCheck size={18} /></span>
+        <div><strong>NSE &amp; BSE Authorised Person</strong><span>AP2069592873</span></div>
+      </div>
+      <div className="float-card float-card--bottom">
+        <span className="float-icon float-icon--gold"><FileText size={18} /></span>
+        <div><strong>Contract notes</strong><span>Within 24 hours of every trade</span></div>
+      </div>
+    </div>
+  )
+}
+
 function Hero() {
   return (
     <section id="home" className="hero" aria-labelledby="hero-heading">
@@ -238,10 +362,10 @@ function Hero() {
             <p className="hero-description">{siteData.hero.description}</p>
             <div className="hero-actions">
               <NeuButton href="#contact" variant="primary">
-                Open Demat Account <ArrowRight size={18} className="icon-gold" />
+                Open Demat Account <ArrowRight size={18} className="icon-gold btn-arrow" />
               </NeuButton>
               <NeuButton href="#downloads" variant="secondary">
-                <Download size={17} /> Download Documents
+                <Download size={17} /> <span className="label-full">Download Documents</span><span className="label-short">Documents</span>
               </NeuButton>
               <a className="hero-phone" href={telHref(siteData.company.phone)}><Phone size={18} /> {siteData.company.phone}</a>
             </div>
@@ -254,11 +378,15 @@ function Hero() {
               ))}
             </dl>
           </div>
-          <div className="hero-cards">
-            <div className="hero-cards-head">
-              <span><span className="pulse-dot" aria-hidden="true" /> Registration snapshot</span>
-              <span>From exchange certificates</span>
-            </div>
+          <DeviceStage />
+        </div>
+        <div className="reg-strip">
+          <div className="hero-cards-head">
+            <span><span className="pulse-dot" aria-hidden="true" /> Registration snapshot</span>
+            <span className="label-full">From exchange certificates</span>
+            <SwipeHint />
+          </div>
+          <div className="reg-strip-grid">
             {registrationCards.map((card, index) => (
               <Reveal key={card.number} delay={index * 0.06}>
                 <NeuCard interactive className="reg-card">
@@ -274,8 +402,8 @@ function Hero() {
                     </div>
                   </div>
                   <div className="reg-card-foot">
-                    <span><ShieldCheck size={15} /> Active registration</span>
-                    <a href={card.file} target="_blank" rel="noreferrer">View certificate <ChevronRight size={15} /></a>
+                    <span><ShieldCheck size={15} /> Active<span className="label-full">registration</span></span>
+                    <a href={card.file} target="_blank" rel="noreferrer">View <span className="label-full">certificate</span><span className="label-short">PDF</span> <ChevronRight size={15} /></a>
                   </div>
                 </NeuCard>
               </Reveal>
@@ -294,7 +422,7 @@ function About() {
       <div className="container about-grid">
         <div className="about-copy">
           <p className="eyebrow eyebrow--line">{siteData.about.eyebrow}</p>
-          <h2 id="about-title" className="section-heading">{siteData.about.title}</h2>
+          <h2 id="about-title" className="section-heading">{siteData.about.title} <span className="title-accent">{siteData.about.titleAccent}</span></h2>
           <p className="lead">
             {siteData.about.body} <span className="mono">CIN: {siteData.company.cin}</span>
           </p>
@@ -334,19 +462,19 @@ function Services() {
         <SectionTitle
           id="services-title"
           eyebrow="Our financial services"
-          title="Capital market services for growth and protection."
+          title="Capital market services for" accent="growth &amp; protection."
           description="Mirae Asset Sharekhan’s market infrastructure, with local relationship support across every segment."
         />
+        <div className="carousel-head"><span>{siteData.services.length} services</span><SwipeHint /></div>
         <div className="services-grid">
           {siteData.services.map((service, index) => {
-            const Icon = serviceIcons[service.icon] ?? ChartNoAxesCombined
             const accent = 'accent' in service
             return (
               <Reveal key={service.title} delay={(index % 3) * 0.05}>
                 <NeuCard className="service-card">
                   <div>
-                    <div className="service-card-top">
-                      <span className={`icon-tile icon-tile--soft ${accent ? 'icon-tile--gold' : ''}`}><Icon size={23} /></span>
+                    <div className="service-art-band">
+                      <ServiceArt variant={service.icon} />
                       <span className={`chip ${accent ? 'chip--gold' : ''}`}>{service.tag}</span>
                     </div>
                     <h3>{service.title}</h3>
@@ -367,12 +495,152 @@ function Services() {
   )
 }
 
+function AccountSteps() {
+  return (
+    <section id="open-account" className="section-shell section-white" aria-labelledby="open-account-title">
+      <div className="container steps-grid">
+        <Reveal className="steps-art">
+          <div className="steps-art-frame">
+            <div className="dot-grid" aria-hidden="true" />
+            <KycIllustration />
+          </div>
+        </Reveal>
+        <div>
+          <SectionTitle
+            id="open-account-title"
+            eyebrow="Account opening"
+            title="Open your account in" accent="4 simple steps."
+            description="We guide you through Mirae Asset Sharekhan’s account opening, from KYC to your first trade."
+          />
+          <ol className="step-list">
+            {siteData.accountSteps.map((step, index) => (
+              <li key={step.title}>
+                <span className="step-list-number">{String(index + 1).padStart(2, '0')}</span>
+                <div><h3>{step.title}</h3><p>{step.text}</p></div>
+              </li>
+            ))}
+          </ol>
+          <div className="hero-actions">
+            <NeuButton href="#contact-form" variant="primary">Start your application <ArrowRight size={18} className="icon-gold btn-arrow" /></NeuButton>
+            <NeuButton href={pages.investorCharter} variant="secondary"><FileText size={17} /> Investor Charter</NeuButton>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+function Markets() {
+  return (
+    <section id="markets" className="section-shell" aria-labelledby="markets-title">
+      <div className="container">
+        <div className="split-title">
+          <SectionTitle
+            id="markets-title"
+            eyebrow="Market snapshot"
+            title="Track the" accent="markets."
+            description="Benchmark index, broad market, currency and gold charts. Use the range buttons to zoom from days to years."
+          />
+          <span className="chip chip--gold">BSE data · delayed / end-of-day</span>
+        </div>
+        <div className="markets-grid">
+          <NeuCard className="market-main">
+            <TradingViewWidget
+              widget="advanced-chart"
+              label="Interactive SENSEX chart"
+              className="market-main-chart"
+              lazy
+              placeholder={<ChartPlaceholder />}
+              config={{
+                autosize: true,
+                symbol: market.headlineSymbol,
+                interval: 'D',
+                range: '12M',
+                timezone: 'Asia/Kolkata',
+                theme: 'light',
+                style: '1',
+                locale: 'en',
+                backgroundColor: 'rgba(255, 255, 255, 1)',
+                gridColor: 'rgba(74, 26, 30, 0.06)',
+                withdateranges: true,
+                hide_side_toolbar: true,
+                allow_symbol_change: false,
+                save_image: false,
+                calendar: false,
+                support_host: 'https://www.tradingview.com',
+              }}
+            />
+          </NeuCard>
+          <div className="market-minis">
+            {market.miniCharts.map((chart) => (
+              <NeuCard key={chart.symbol} className="market-mini">
+                <TradingViewWidget
+                  widget="mini-symbol-overview"
+                  label={`${chart.label} one-month chart`}
+                  className="market-mini-chart"
+                  lazy
+                  placeholder={<ChartPlaceholder text={`Loading ${chart.label}…`} />}
+                  config={{
+                    symbol: chart.symbol,
+                    width: '100%',
+                    height: '100%',
+                    locale: 'en',
+                    dateRange: '1M',
+                    colorTheme: 'light',
+                    isTransparent: true,
+                    autosize: true,
+                    trendLineColor: 'rgba(74, 26, 30, 1)',
+                    underLineColor: 'rgba(74, 26, 30, 0.14)',
+                    underLineBottomColor: 'rgba(74, 26, 30, 0)',
+                  }}
+                />
+              </NeuCard>
+            ))}
+          </div>
+        </div>
+        <TradingViewCredit note={market.credit} />
+      </div>
+    </section>
+  )
+}
+
+function TrustBand() {
+  const icons = [BadgeCheck, ShieldCheck, FileText, Gavel]
+  return (
+    <section className="trust-band" aria-labelledby="trust-title">
+      <div className="trust-dots" aria-hidden="true" />
+      <div className="container trust-inner">
+        <div className="trust-copy">
+          <p className="eyebrow eyebrow--light">Why investors choose AAVL</p>
+          <h2 id="trust-title">Regulated access. <span>Personal support.</span></h2>
+          <p>Talk to our Delhi team about account opening, products and all applicable charges before you invest.</p>
+          <div className="trust-actions">
+            <NeuButton href="#contact-form" variant="gold">Open Demat Account <ArrowRight size={18} className="btn-arrow" /></NeuButton>
+            <a className="trust-phone" href={telHref(siteData.company.phone)}><Phone size={18} /> {siteData.company.phone}</a>
+          </div>
+        </div>
+        <ul className="trust-points">
+          {siteData.trustPoints.map((point, index) => {
+            const Icon = icons[index]
+            return (
+              <li key={point.title}>
+                <span className="trust-icon"><Icon size={20} /></span>
+                <div><h3>{point.title}</h3><p>{point.text}</p></div>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+    </section>
+  )
+}
+
 function AssociatedSites() {
   if (!siteData.associatedSites.length) return null
   return (
     <section id="associated-sites" className="section-shell" aria-labelledby="associated-title">
       <div className="container">
-        <SectionTitle id="associated-title" eyebrow="Group portals & platforms" title="Our associated websites" description="Explore our group and partner platforms." />
+        <SectionTitle id="associated-title" eyebrow="Group portals & platforms" title="Our associated" accent="websites." description="Explore our group and partner platforms." />
         <div className="services-grid">
           {siteData.associatedSites.map((site, index) => (
             <NeuCard key={site.url} interactive className="service-card">
@@ -399,15 +667,15 @@ function Team() {
     <section id="team" className="section-shell section-white" aria-labelledby="team-title">
       <div className="container">
         <div className="split-title">
-          <SectionTitle id="team-title" eyebrow="Governance & executive team" title="Experienced leadership. Accredited professionals." />
+          <SectionTitle id="team-title" eyebrow="Governance & executive team" title="Experienced leadership." accent="Accredited professionals." />
           <p className="section-description">Leadership and professionals across management, human resources, compliance, accounting and financial analysis.</p>
         </div>
         <div className="team-grid">
           {siteData.team.map((member, index) => (
             <Reveal key={member.name} delay={(index % 3) * 0.04}>
-              <NeuCard className="team-card">
+              <NeuCard interactive className="team-card">
                 <div className="team-card-head">
-                  <div className={`avatar ${index % 3 === 2 || index === 3 ? 'avatar--navy' : ''}`} aria-hidden="true">{member.initials}</div>
+                  <div className={`avatar ${index % 3 === 2 || index === 3 ? 'avatar--dark' : ''}`} aria-hidden="true">{member.initials}</div>
                   <div><h3>{member.name}</h3><p>{member.role}</p></div>
                 </div>
                 <div className="team-card-body">
@@ -430,7 +698,7 @@ function Compliance() {
         <SectionTitle
           id="compliance-title"
           eyebrow="Verified statutory matrix"
-          title="Regulatory registration & exchange authorisations."
+          title="Regulatory registration &amp;" accent="exchange authorisations."
           description="Corporate identity and exchange authorisations, taken from the company, NSE, BSE and Sharekhan documents."
         />
         <div className="compliance-grid">
@@ -458,7 +726,7 @@ function Compliance() {
               <ul className="doc-list">
                 {siteData.certificates.map((certificate) => (
                   <li key={certificate.title}>
-                    <FileCheck2 size={22} />
+                    <img className="doc-thumb" src={certificate.image} alt="" loading="lazy" />
                     <div><strong>{certificate.title}</strong><span>{certificate.issuedBy} • PDF</span></div>
                     <a href={certificate.file} target="_blank" rel="noreferrer" aria-label={`View ${certificate.title}`} title="View"><Eye size={18} /></a>
                     <a href={certificate.file} download aria-label={`Download ${certificate.title}`} title="Download"><Download size={18} /></a>
@@ -486,8 +754,11 @@ function ImportantLinks() {
       <div className="portal-grid">
         {siteData.importantLinks.map((link) => (
           <ExternalAwareLink key={link.label} href={link.href} className="portal-link">
-            <strong>{link.label}</strong>
-            <span>{link.caption}</span>
+            <span className="portal-text">
+              <strong>{link.label}</strong>
+              <span>{link.caption}</span>
+            </span>
+            <span className="portal-arrow" aria-hidden="true">{isExternal(link.href) ? <ArrowUpRight size={17} /> : <ArrowRight size={17} />}</span>
           </ExternalAwareLink>
         ))}
       </div>
@@ -567,7 +838,7 @@ function InvestorCorner() {
           <SectionTitle
             id="investor-title"
             eyebrow="Investor protection & education"
-            title="Investor Corner & statutory guidelines."
+            title="Investor Corner &amp;" accent="statutory guidelines."
             description="Official portals, exchange-mandated guidance, the 2026 holiday calendar and a clear grievance escalation path."
           />
           <NeuButton href={pages.investorCharter} variant="secondary"><FileText size={17} /> Read the Investor Charter</NeuButton>
@@ -595,35 +866,40 @@ function Downloads() {
   return (
     <section id="downloads" className="section-shell section-soft" aria-labelledby="downloads-title">
       <div className="container">
-        <SectionTitle id="downloads-title" eyebrow="Statutory & onboarding resources" title="Download documents." description="Select a document to view or download." />
+        <SectionTitle id="downloads-title" eyebrow="Statutory & onboarding resources" title="Download" accent="documents." description="Select a document to view or download." />
         <NeuCard className="download-picker">
-          <div className="form-grid">
-            <label>
-              <span>Document category</span>
-              <select value={category} onChange={(event) => changeCategory(event.target.value)}>
-                {siteData.downloadCategories.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
-              </select>
-            </label>
-            <label>
-              <span>Select document</span>
-              <select value={selected.file} onChange={(event) => setSelectedFile(event.target.value)}>
-                {documents.map((document) => <option key={document.file} value={document.file}>{document.label}</option>)}
-              </select>
-            </label>
-          </div>
-          <div className="download-preview" aria-live="polite">
-            <div className="download-preview-info">
-              <span className="icon-tile icon-tile--soft"><FileText size={21} /></span>
-              <div>
-                <p>{selected.label}</p>
-                <span>Format: PDF • {selected.source} • <em>Official copy</em></span>
+          <div className="download-picker-main">
+            <div className="form-grid">
+              <label>
+                <span>Document category</span>
+                <select value={category} onChange={(event) => changeCategory(event.target.value)}>
+                  {siteData.downloadCategories.map((item) => <option key={item.id} value={item.id}>{item.label}</option>)}
+                </select>
+              </label>
+              <label>
+                <span>Select document</span>
+                <select value={selected.file} onChange={(event) => setSelectedFile(event.target.value)}>
+                  {documents.map((document) => <option key={document.file} value={document.file}>{document.label}</option>)}
+                </select>
+              </label>
+            </div>
+            <div className="download-preview" aria-live="polite">
+              <div className="download-preview-info">
+                <span className="icon-tile icon-tile--soft"><FileText size={21} /></span>
+                <div>
+                  <p>{selected.label}</p>
+                  <span>Format: PDF • {selected.source} • <em>Official copy</em></span>
+                </div>
+              </div>
+              <div className="download-preview-actions">
+                <NeuButton href={selected.file} variant="secondary" target="_blank" rel="noreferrer"><Eye size={16} /> View</NeuButton>
+                <NeuButton href={selected.file} variant="primary" download><Download size={16} /> Download</NeuButton>
               </div>
             </div>
-            <div className="download-preview-actions">
-              <NeuButton href={selected.file} variant="secondary" target="_blank" rel="noreferrer"><Eye size={16} /> View</NeuButton>
-              <NeuButton href={selected.file} variant="primary" download><Download size={16} /> Download</NeuButton>
-            </div>
           </div>
+          <a className="download-thumb" href={selected.file} target="_blank" rel="noreferrer" aria-label={`Open ${selected.label}`}>
+            {'preview' in selected ? <img src={selected.preview} alt={`Preview of ${selected.label}`} /> : <DocumentIllustration label={selected.label} />}
+          </a>
         </NeuCard>
         <h3 className="block-heading"><Star size={17} /> All downloads</h3>
         <div className="download-grid">
@@ -712,7 +988,7 @@ function Contact() {
   return (
     <section id="contact" className="section-shell" aria-labelledby="contact-title">
       <div className="container">
-        <SectionTitle id="contact-title" eyebrow="Office desk & onboarding" title="Consultation desk & account opening." description="Visit our Delhi office or send us an enquiry for account opening, product information or service support." />
+        <SectionTitle id="contact-title" eyebrow="Office desk & onboarding" title="Consultation desk &amp;" accent="account opening." description="Visit our Delhi office or send us an enquiry for account opening, product information or service support." />
         <div className="contact-grid">
           <Reveal><ContactForm /></Reveal>
           <div className="contact-side">
@@ -758,7 +1034,8 @@ function Footer() {
       <div className="container">
         <div className="footer-top">
           <div className="footer-brand">
-            <p className="footer-name"><span aria-hidden="true" /> {siteData.company.legalName.replace('Private Limited', 'Pvt. Ltd.')}</p>
+            <Logo inverse large />
+            <p className="footer-legal-name">{siteData.company.legalName}</p>
             <p className="micro-label">CIN: {siteData.company.cin}</p>
             <p>Authorised Person of Sharekhan Ltd. (Mirae Asset Sharekhan), offering equity, derivatives and investment products with personal support from our registered office in Delhi.</p>
             <p className="footer-contact-line"><MapPin size={17} /> {siteData.company.address}</p>
@@ -806,10 +1083,34 @@ function Footer() {
   )
 }
 
+const whatsappHref = `https://wa.me/${siteData.company.whatsapp}?text=${encodeURIComponent('Hello AAVL, I would like to know more about opening an account.')}`
+
+// Phones only (shown via CSS): one-tap call, WhatsApp and account opening, always within thumb reach.
+function MobileActionBar() {
+  return (
+    <nav className="mobile-bar" aria-label="Quick actions">
+      <a href={telHref(siteData.company.phone)}><Phone size={18} /> Call</a>
+      <a href={whatsappHref} target="_blank" rel="noreferrer" className="mobile-bar-wa"><MessageCircle size={18} /> WhatsApp</a>
+      <a href="#contact-form" className="mobile-bar-primary"><UserPlus size={18} /> Open Account</a>
+    </nav>
+  )
+}
+
+function SwipeHint() {
+  return <span className="swipe-hint" aria-hidden="true">Swipe <ArrowRight size={13} /></span>
+}
+
 function FloatingActions() {
   const [showTop, setShowTop] = useState(false)
   useEffect(() => {
-    const onScroll = () => setShowTop(window.scrollY > 720)
+    // On phones the button would cover card edges, so it only appears while scrolling back up.
+    const phone = window.matchMedia('(max-width: 680px)')
+    let lastY = window.scrollY
+    const onScroll = () => {
+      const y = window.scrollY
+      setShowTop(y > 720 && (!phone.matches || y < lastY))
+      lastY = y
+    }
     onScroll()
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -817,7 +1118,7 @@ function FloatingActions() {
   return (
     <div className="floating-actions">
       {showTop ? <button className="back-to-top" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} aria-label="Back to top"><ArrowUp size={20} /></button> : null}
-      <a className="whatsapp-button" href={`https://wa.me/${siteData.company.whatsapp}?text=${encodeURIComponent('Hello AAVL, I would like to know more about opening an account.')}`} target="_blank" rel="noreferrer" aria-label="Chat with AAVL on WhatsApp">
+      <a className="whatsapp-button" href={whatsappHref} target="_blank" rel="noreferrer" aria-label="Chat with AAVL on WhatsApp">
         <MessageCircle size={20} /><span>WhatsApp us</span>
       </a>
     </div>
@@ -858,8 +1159,12 @@ function App() {
         ) : (
           <>
             <Hero />
+            <NoticeBand />
             <About />
             <Services />
+            <AccountSteps />
+            <Markets />
+            <TrustBand />
             <AssociatedSites />
             <Team />
             <Compliance />
@@ -871,6 +1176,7 @@ function App() {
       </main>
       <Footer />
       <FloatingActions />
+      <MobileActionBar />
     </>
   )
 }

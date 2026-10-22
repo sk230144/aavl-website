@@ -47,7 +47,8 @@ export const siteData = {
   },
   about: {
     eyebrow: 'Corporate identity',
-    title: 'Personal support, backed by Mirae Asset Sharekhan.',
+    title: 'Personal support, backed by',
+    titleAccent: 'Mirae Asset Sharekhan.',
     body:
       'Incorporated under the Companies Act, 2013, Aggarwal & Aggarwal Ventures Private Limited operates as an Authorised Person of Sharekhan Limited, helping investors open accounts, understand products and get day-to-day service support.',
     mission:
@@ -90,6 +91,42 @@ export const siteData = {
       description: 'A SEBI-regulated fund category between mutual funds and PMS, distributed by Mirae Asset Sharekhan.',
       points: ['Minimum investment as per SEBI norms (₹10 lakh)', 'Distributed under ARN 20669'],
     },
+  ],
+  // TradingView free-widget symbols. NSE symbols (NIFTY, BANKNIFTY) are not licensed for free widgets, so BSE is used.
+  market: {
+    headlineSymbol: 'BSE:SENSEX',
+    phoneSymbol: { symbol: 'BSE:BSE500', label: 'BSE 500' },
+    miniCharts: [
+      { symbol: 'BSE:BSE500', label: 'BSE 500' },
+      { symbol: 'FX_IDC:USDINR', label: 'USD / INR' },
+      { symbol: 'TVC:GOLD', label: 'Gold (USD/oz)' },
+    ],
+    tickerTape: [
+      { proName: 'BSE:SENSEX', title: 'SENSEX' },
+      { proName: 'BSE:BSE500', title: 'BSE 500' },
+      { proName: 'BSE:RELIANCE', title: 'Reliance' },
+      { proName: 'BSE:HDFCBANK', title: 'HDFC Bank' },
+      { proName: 'BSE:TCS', title: 'TCS' },
+      { proName: 'BSE:INFY', title: 'Infosys' },
+      { proName: 'BSE:ICICIBANK', title: 'ICICI Bank' },
+      { proName: 'BSE:SBIN', title: 'SBI' },
+      { proName: 'BSE:ITC', title: 'ITC' },
+      { proName: 'FX_IDC:USDINR', title: 'USD/INR' },
+      { proName: 'TVC:GOLD', title: 'Gold (USD)' },
+    ],
+    credit: 'BSE data may be delayed or end-of-day. Shown for information only – not investment advice or a recommendation.',
+  },
+  trustPoints: [
+    { title: 'Exchange-authorised', text: 'Authorised Person on NSE and BSE through Sharekhan Ltd.' },
+    { title: 'Funds stay with Sharekhan', text: 'Pay only to Sharekhan Limited from your registered bank account.' },
+    { title: 'Contract notes in 24 hours', text: 'Issued directly by Sharekhan Ltd. for every trade.' },
+    { title: 'Clear escalation path', text: 'AP, Sharekhan, exchanges, SEBI SCORES and SMART ODR.' },
+  ],
+  accountSteps: [
+    { title: 'Share your details', text: 'Call, WhatsApp or send the enquiry form. We explain the account, products and all charges before you start.' },
+    { title: 'Complete your KYC', text: 'Keep your PAN, Aadhaar, bank proof and a photograph ready. KYC is a one-time exercise across SEBI intermediaries.' },
+    { title: 'Sign & receive your UCC', text: 'Sign the account opening documents. You receive your Unique Client Code and a copy of the documents within 7 days.' },
+    { title: 'Start investing', text: 'Trade on Mirae Asset Sharekhan’s platforms. Contract notes reach you within 24 hours of every trade.' },
   ],
   servicesNote:
     'Products and services are offered through Mirae Asset Sharekhan. Mutual funds, insurance, PMS and SIF are distribution services, not exchange-traded products. AAVL does not offer guaranteed returns.',
@@ -219,9 +256,9 @@ export const siteData = {
     { id: 'investor', label: 'Investor awareness' },
   ],
   downloads: [
-    { label: 'Certificate of Incorporation', file: '/documents/certificate-of-incorporation.pdf', category: 'company', source: 'Ministry of Corporate Affairs' },
-    { label: 'NSE AP Certificate', file: '/documents/nse-ap-certificate.pdf', category: 'registration', source: 'NSE • AP2069592873' },
-    { label: 'BSE AP Certificate', file: '/documents/bse-ap-certificate.pdf', category: 'registration', source: 'BSE • AP01074801179851' },
+    { label: 'Certificate of Incorporation', file: '/documents/certificate-of-incorporation.pdf', category: 'company', source: 'Ministry of Corporate Affairs', preview: '/images/certificates/certificate-of-incorporation.png' },
+    { label: 'NSE AP Certificate', file: '/documents/nse-ap-certificate.pdf', category: 'registration', source: 'NSE • AP2069592873', preview: '/images/certificates/nse-ap-certificate.png' },
+    { label: 'BSE AP Certificate', file: '/documents/bse-ap-certificate.pdf', category: 'registration', source: 'BSE • AP01074801179851', preview: '/images/certificates/bse-ap-certificate.png' },
     { label: 'Trading Terminal Details', file: '/documents/trading-terminal-details.pdf', category: 'registration', source: 'Sharekhan Limited' },
     { label: 'Sharekhan Registrations', file: '/documents/sharekhan-certificate-2026.pdf', category: 'registration', source: 'Mirae Asset Sharekhan' },
     { label: 'Investor Do’s & Don’ts', file: '/documents/investor-dos-and-donts.pdf', category: 'investor', source: 'Mirae Asset Sharekhan' },
