@@ -1750,26 +1750,327 @@ main:focus {
 }
 
 .device-title {
-  flex: 1;
+  flex: 0 1 auto;
   overflow: hidden;
   color: #f5ece9;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.device-chip {
+a.device-title:hover {
+  color: var(--gold-light);
+}
+
+/* Kept beside the title: the right end of the bar sits under the floating registration card. */
+.device-quote {
   display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 8px;
-  background: rgba(255, 255, 255, 0.06);
-  font-size: 10px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+  flex: 0 0 auto;
+  gap: 8px;
+  margin-right: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.device-quote b {
+  color: white;
+}
+
+.device-quote .is-up {
+  color: var(--up-on-dark);
+}
+
+.device-quote .is-down {
+  color: var(--down-on-dark);
 }
 
 .device-screen {
-  height: 330px;
+  height: 360px;
+}
+
+/* ---------- AAVL 99 chart (hero and #/aavl-99) ---------- */
+.aavl-chart {
+  display: flex;
+  min-height: 0;
+  flex-direction: column;
+}
+
+.aavl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 4px;
+}
+
+.aavl-plot {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+
+.aavl-chart--dark .range-buttons {
+  border-color: rgba(255, 255, 255, 0.14);
+}
+
+.aavl-chart--dark .range-buttons button {
+  padding: 4px 10px;
+  color: var(--dark-text);
+  font-size: 11px;
+}
+
+.aavl-chart--dark .range-buttons button + button {
+  border-left-color: rgba(255, 255, 255, 0.14);
+}
+
+.aavl-chart--dark .range-buttons button:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.aavl-chart--dark .range-buttons button[aria-pressed="true"] {
+  background: var(--logo-gold);
+  color: var(--dark);
+}
+
+.aavl-details-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  color: var(--primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.aavl-chart--dark .aavl-details-link {
+  color: var(--gold-light);
+}
+
+.aavl-details-link:hover {
+  text-decoration: underline;
+}
+
+.pc-ref line {
+  stroke: var(--chart-text);
+  stroke-dasharray: 1 3;
+}
+
+.pc-ref text {
+  fill: var(--chart-text);
+  font-size: 10.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-ref rect {
+  fill: var(--chart-grid);
+  stroke: var(--chart-cross);
+}
+
+.aavl-stats {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  align-items: center;
+  gap: 24px;
+  padding: 24px 28px;
+}
+
+.aavl-stat--main {
+  display: grid;
+  gap: 4px;
+}
+
+.aavl-stat--main span {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.aavl-stat--main strong {
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 40px;
+  font-weight: 400;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.aavl-stat--main em {
+  font-style: normal;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.aavl-stats dl {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+}
+
+.aavl-stats dt {
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.aavl-stats dd {
+  margin: 4px 0 0;
+  color: var(--text);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
+.aavl-stats .is-up,
+.aavl-movers .is-up,
+.aavl-table .is-up {
+  color: var(--success);
+}
+
+.aavl-stats .is-down,
+.aavl-movers .is-down,
+.aavl-table .is-down {
+  color: var(--danger);
+}
+
+.aavl-page-card {
+  overflow: hidden;
+}
+
+.aavl-page-chart {
+  height: 520px;
+}
+
+.aavl-page-chart .aavl-toolbar {
+  padding: 16px 20px 8px;
+}
+
+.aavl-page-chart .aavl-plot {
+  padding-left: 12px;
+}
+
+.aavl-movers {
+  padding: 22px 24px;
+}
+
+.aavl-movers h2 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 8px;
+  color: var(--primary);
+  font-family: var(--font-brand);
+  font-size: 16px;
+}
+
+.aavl-movers ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aavl-movers li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid var(--surface);
+  font-size: 13px;
+}
+
+.aavl-movers li > span {
+  display: grid;
+  gap: 2px;
+}
+
+.aavl-movers li > span:last-child {
+  flex: 0 0 auto;
+  font-weight: 600;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.aavl-movers small,
+.aavl-table small {
+  display: block;
+  color: var(--faint);
+  font-size: 11.5px;
+  font-weight: 400;
+}
+
+.aavl-table-head {
+  margin-bottom: 16px;
+}
+
+.aavl-table th:nth-child(n + 2),
+.aavl-table td:nth-child(n + 2) {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.aavl-table th:nth-child(n + 2) .sort-button {
+  justify-content: flex-end;
+}
+
+.sort-button {
+  display: inline-flex;
+  width: 100%;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
+.sort-button:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+}
+
+.aavl-show-all {
+  margin-top: 16px;
+  padding: 9px 16px;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  color: var(--primary);
+  font: 600 13px var(--font-body);
+  cursor: pointer;
+}
+
+.aavl-show-all:hover {
+  border-color: var(--primary);
+}
+
+.aavl-method p {
+  max-width: 860px;
+  color: var(--muted);
+  line-height: 1.65;
+}
+
+.aavl-disclaimer {
+  padding: 14px 16px;
+  border-left: 3px solid var(--logo-gold);
+  background: var(--surface-low);
+  font-size: 12.5px;
+}
+
+@media (max-width: 680px) {
+  .aavl-stats {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 20px;
+  }
+
+  .aavl-page-chart {
+    height: 420px;
+  }
 }
 
 .device-phone {
@@ -1869,8 +2170,8 @@ main:focus {
 }
 
 .float-card--top {
-  top: 0;
-  right: 20px;
+  top: -14px;
+  right: -12px;
 }
 
 .float-card--bottom {
@@ -2390,15 +2691,15 @@ main:focus {
 .avatar {
   position: relative;
   display: grid;
-  width: 56px;
-  height: 56px;
-  flex: 0 0 56px;
+  width: 68px;
+  height: 68px;
+  flex: 0 0 68px;
   margin: 0 6px 6px 0;
   place-items: center;
   background: var(--primary);
   color: white;
   font-family: var(--font-display);
-  font-size: 23px;
+  font-size: 28px;
   font-weight: 400;
 }
 
@@ -3144,32 +3445,6 @@ textarea:focus {
 
 .input-prefix input {
   border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
-}
-
-.consent {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 12px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 12px;
-  line-height: 1.6;
-}
-
-.consent input {
-  width: 16px;
-  height: 16px;
-  flex: 0 0 16px;
-  margin-top: 2px;
-  accent-color: var(--primary);
-}
-
-.consent > span:last-child {
-  font-size: 12px;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
 }
 
 .form-hint,
@@ -4281,7 +4556,7 @@ tbody tr:last-child td {
   }
 
   .device-screen {
-    height: 260px;
+    height: 300px;
   }
 
   .device-phone {
@@ -4859,10 +5134,10 @@ tbody tr:last-child td {
   }
 
   .avatar {
-    width: 48px;
-    height: 48px;
-    flex-basis: 48px;
-    font-size: 16px;
+    width: 56px;
+    height: 56px;
+    flex-basis: 56px;
+    font-size: 21px;
   }
 
   .team-card h3 {

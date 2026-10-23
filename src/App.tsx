@@ -32,7 +32,8 @@ import { Reveal } from './components/Reveal'
 import { SectionTitle } from './components/SectionTitle'
 import { DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
-import { InstrumentChart, MainMarketChart, MarketAsOf, QuoteCard, TickerTape } from './components/MarketCharts'
+import { Aavl99Chart, Aavl99Quote, AAVL99_ROUTE } from './components/Aavl99'
+import { MainMarketChart, MarketAsOf, QuoteCard, TickerTape } from './components/MarketCharts'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
 import { InfoPage, pageTitles } from './pages/InfoPages'
@@ -226,9 +227,9 @@ const registrationCards = [
   },
 ]
 
-// Laptop + phone mockup in the spirit of a trading platform, showing real (delayed) SENSEX and BSE 500 charts.
+// Laptop + phone mockup in the spirit of a trading platform: the AAVL 99 index and a BSE 500 watchlist (delayed prices).
 function DeviceStage() {
-  // Candlesticks need ~420px to stay readable; phones get the area chart instead.
+  // Axis labels need ~420px; phones get the bare chart.
   const narrow = useMediaQuery('(max-width: 680px)')
   return (
     <div className="device-stage">
@@ -236,17 +237,10 @@ function DeviceStage() {
       <div className="device-desktop">
         <div className="device-bar">
           <span className="device-dots" aria-hidden="true"><i /><i /><i /></span>
-          <span className="device-title">Market overview · S&amp;P BSE SENSEX</span>
-          <span className="device-chip"><span className="pulse-dot" aria-hidden="true" /> BSE · delayed</span>
+          <a className="device-title" href={AAVL99_ROUTE}>AAVL 99 Index</a>
+          <Aavl99Quote className="device-quote" />
         </div>
-        <InstrumentChart
-          id={market.headline}
-          months={narrow ? 3 : 6}
-          kind={narrow ? 'area' : 'candles'}
-          tone="dark"
-          axes={!narrow}
-          className="device-screen"
-        />
+        <Aavl99Chart tone="dark" axes={!narrow} detailsLink className="device-screen" />
       </div>
       <div className="device-phone">
         <span className="device-notch" aria-hidden="true" />
@@ -259,7 +253,7 @@ function DeviceStage() {
       </div>
       <div className="float-card float-card--top">
         <span className="float-icon"><BadgeCheck size={18} /></span>
-        <div><strong>NSE &amp; BSE Authorised Person</strong><span>AP2069592873</span></div>
+        <div><strong>AAVL – Authorised Person of Sharekhan</strong><span>AP2069592873</span></div>
       </div>
       <div className="float-card float-card--bottom">
         <span className="float-icon float-icon--gold"><FileText size={18} /></span>
@@ -801,13 +795,9 @@ function Downloads() {
 type FormFields = {
   name: string
   phone: string
-  email: string
-  interest: string
-  city: string
-  message: string
 }
 
-const emptyForm: FormFields = { name: '', phone: '', email: '', interest: '', city: '', message: '' }
+const emptyForm: FormFields = { name: '', phone: '' }
 
 function ContactForm() {
   const [form, setForm] = useState<FormFields>(emptyForm)
@@ -818,10 +808,8 @@ function ContactForm() {
     const target = event.currentTarget
     if (!target.reportValidity()) return
 
-    const subject = encodeURIComponent(`${form.interest} enquiry from ${form.name}`)
-    const body = encodeURIComponent(
-      `Name: ${form.name}\nPhone: +91 ${form.phone}\nEmail: ${form.email}\nInterest: ${form.interest}\nCity / area: ${form.city || '-'}\n\nMessage:\n${form.message || 'No additional message.'}`,
-    )
+    const subject = encodeURIComponent(`Callback request from ${form.name}`)
+    const body = encodeURIComponent(`Name: ${form.name}\nPhone: +91 ${form.phone}\n\nPlease call me back about opening an account.`)
     setSubmitted(true)
     window.location.href = `mailto:${siteData.company.email}?subject=${subject}&body=${body}`
   }
@@ -832,31 +820,17 @@ function ContactForm() {
     <NeuCard id="contact-form" className="contact-form-card">
       <div className="form-heading">
         <h3>Open account / request a callback</h3>
-        <p>Fill in your details. Submitting opens your email app with the enquiry pre-filled.</p>
+        <p>Leave your name and mobile number and we will call you back. Submitting opens your email app with the request pre-filled.</p>
       </div>
       <form onSubmit={handleSubmit}>
         <div className="form-grid">
-          <label><span>Full name (as per PAN) *</span><input required minLength={2} autoComplete="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. Rajesh Kumar" /></label>
+          <label><span>Full name *</span><input required minLength={2} autoComplete="name" value={form.name} onChange={(event) => update('name', event.target.value)} placeholder="e.g. Rajesh Kumar" /></label>
           <label>
             <span>10-digit mobile number *</span>
             <span className="input-prefix"><span>+91</span><input required type="tel" inputMode="numeric" autoComplete="tel-national" pattern="[0-9]{10}" value={form.phone} onChange={(event) => update('phone', event.target.value)} placeholder="9876543210" /></span>
           </label>
-          <label><span>Email address *</span><input required type="email" autoComplete="email" value={form.email} onChange={(event) => update('email', event.target.value)} placeholder="you@example.com" /></label>
-          <label>
-            <span>Primary service of interest *</span>
-            <select required value={form.interest} onChange={(event) => update('interest', event.target.value)}>
-              <option value="" disabled>Select an option…</option>
-              {siteData.interests.map((interest) => <option key={interest}>{interest}</option>)}
-            </select>
-          </label>
         </div>
-        <label><span>City / residential area</span><input autoComplete="address-level2" value={form.city} onChange={(event) => update('city', event.target.value)} placeholder="e.g. Rohini, New Delhi" /></label>
-        <label><span>Message (optional)</span><textarea rows={3} maxLength={1000} value={form.message} onChange={(event) => update('message', event.target.value)} placeholder="Tell us what you would like to discuss" /></label>
-        <label className="consent">
-          <input type="checkbox" required />
-          <span>I consent to be contacted by Aggarwal &amp; Aggarwal Ventures Pvt. Ltd. (Authorised Person of Sharekhan Limited) by call, SMS or WhatsApp about my enquiry.</span>
-        </label>
-        <NeuButton type="submit" variant="primary" className="block-button"><Send size={17} /> Submit enquiry</NeuButton>
+        <NeuButton type="submit" variant="primary" className="block-button"><Send size={17} /> Request callback</NeuButton>
         {submitted ? (
           <p className="form-status" role="status"><Check size={17} /> Your email app should open now.</p>
         ) : (

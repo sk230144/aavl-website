@@ -1,9 +1,9 @@
 // Pulls daily prices for the site's market charts and ticker into public/market-data.json.
 // Runs before every build (npm "prebuild") and on demand with `npm run market:update`.
-// Source: Yahoo Finance's public chart endpoint. It needs no key but is unofficial; swap
-// fetchDaily() for a licensed feed if one is bought. If a fetch fails, the previous file's
-// data for that instrument is kept so an offline build still works.
+// Source: Yahoo Finance (see yahoo.mjs). If a fetch fails, the previous file's data for that
+// instrument is kept so an offline build still works.
 import { readFile, writeFile } from 'node:fs/promises'
+import { fetchChart, localDate, round } from './yahoo.mjs'
 
 const OUT = new URL('../public/market-data.json', import.meta.url)
 
@@ -24,17 +24,8 @@ const INSTRUMENTS = [
   { id: 'ITC', label: 'ITC', name: 'ITC', yahoo: 'ITC.BO', range: '1d' },
 ]
 
-const round = (value) => Math.round(value * 100) / 100
-
-// Exchange-local calendar date for a bar's unix timestamp.
-const localDate = (seconds, gmtoffset) => new Date((seconds + gmtoffset) * 1000).toISOString().slice(0, 10)
-
 async function fetchDaily({ yahoo, range }) {
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(yahoo)}?range=${range}&interval=1d`
-  const response = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0' }, signal: AbortSignal.timeout(20000) })
-  if (!response.ok) throw new Error(`HTTP ${response.status}`)
-  const result = (await response.json()).chart?.result?.[0]
-  if (!result?.timestamp) throw new Error('no data in response')
+  const result = await fetchChart(yahoo, { range, interval: '1d' })
   const { open, high, low, close } = result.indicators.quote[0]
   const bars = []
   result.timestamp.forEach((time, i) => {

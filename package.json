@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node scripts/fetch-market-data.mjs",
+    "prebuild": "node scripts/fetch-market-data.mjs && node scripts/fetch-aavl99.mjs",
     "build": "vite build",
     "market:update": "node scripts/fetch-market-data.mjs",
+    "aavl99:update": "node scripts/fetch-aavl99.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit"
   },

@@ -23,28 +23,9 @@ import { NeuCard } from '../components/NeuCard'
 import { investorCharter as charter } from '../config/investorCharter'
 import { isExternal, pages } from '../config/navigation'
 import { siteData } from '../config/siteData'
-
-function PageShell({ section, title, description, actions, children }: { section: string; title: string; description: string; actions?: ReactNode; children: ReactNode }) {
-  return (
-    <section className="page-shell" aria-labelledby="page-title">
-      <div className="page-hero">
-        <div className="container">
-          <nav className="breadcrumb" aria-label="Breadcrumb">
-            <a href="#home">Home</a>
-            <ChevronRight size={14} aria-hidden="true" />
-            <span>{section}</span>
-            <ChevronRight size={14} aria-hidden="true" />
-            <span aria-current="page">{title}</span>
-          </nav>
-          <h1 id="page-title">{title}</h1>
-          <p className="section-description">{description}</p>
-          {actions ? <div className="page-actions">{actions}</div> : null}
-        </div>
-      </div>
-      <div className="container page-body">{children}</div>
-    </section>
-  )
-}
+import { AAVL99_ROUTE } from '../components/Aavl99'
+import { Aavl99Page } from './Aavl99Page'
+import { PageShell } from './PageShell'
 
 function Panel({ icon: Icon, label, title, id, children }: { icon: LucideIcon; label: string; title: string; id?: string; children: ReactNode }) {
   return (
@@ -461,6 +442,7 @@ const routes: Record<string, () => ReactNode> = {
   [pages.disclaimer]: DisclaimerPage,
   [pages.authorisedPerson]: AuthorisedPersonPage,
   [pages.keyManagerialPerson]: KeyManagerialPersonPage,
+  [AAVL99_ROUTE]: Aavl99Page,
 }
 
 export const pageTitles: Record<string, string> = {
@@ -472,6 +454,7 @@ export const pageTitles: Record<string, string> = {
   [pages.disclaimer]: 'Disclaimer',
   [pages.authorisedPerson]: 'Authorised Person',
   [pages.keyManagerialPerson]: 'Key Managerial Person',
+  [AAVL99_ROUTE]: 'AAVL 99 Index',
 }
 
 export function InfoPage({ route }: { route: string }) {

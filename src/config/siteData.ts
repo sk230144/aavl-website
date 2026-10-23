@@ -315,7 +315,6 @@ export const siteData = {
       'Keep documentary proof of every payment and check that it is reflected in your ledger statement.',
     ],
   },
-  interests: ['Demat Account', 'Trading', 'Mutual Funds', 'Insurance', 'PMS', 'Other'],
   disclaimers: [
     'Investment in securities market are subject to market risks, read all the related documents carefully before investing.',
     'Aggarwal & Aggarwal Ventures Private Limited is an Authorised Person of Sharekhan Ltd. (Mirae Asset Sharekhan), SEBI Reg. No. INZ000171337. Brokerage will not exceed SEBI-prescribed limits.',

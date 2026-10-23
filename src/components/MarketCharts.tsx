@@ -1,14 +1,14 @@
 import { useId, useLayoutEffect, useMemo, useRef, useState, type PointerEvent } from 'react'
 import { ChartPlaceholder } from './Illustrations'
-import { formatAsOf, formatChange, formatDate, formatPct, formatPrice, formatWhole, lastMonths, spanDays, useMarketData, type Bar, type Instrument } from './marketData'
+import { dateStyleFor, formatAsOf, formatChange, formatDate, formatPct, formatPrice, formatWhole, lastMonths, useMarketData, type Bar, type Instrument } from './marketData'
 
-type Tone = 'light' | 'dark'
-type Kind = 'area' | 'candles'
+export type Tone = 'light' | 'dark'
+export type Kind = 'area' | 'candles'
 
-const trend = (value: number) => (value > 0 ? 'is-up' : value < 0 ? 'is-down' : '')
+export const trend = (value: number) => (value > 0 ? 'is-up' : value < 0 ? 'is-down' : '')
 
-// Merge runs of `size` consecutive bars into one, so long ranges still draw readable candles.
-function mergeBars(bars: Bar[], size: number) {
+/** Merge runs of `size` consecutive bars into one (long ranges as readable candles, or 5-minute points into 15-minute candles). */
+export function mergeBars(bars: Bar[], size: number) {
   if (size <= 1) return bars
   const merged: Bar[] = []
   for (let i = 0; i < bars.length; i += size) {
@@ -59,11 +59,13 @@ type PriceChartProps = {
   tone?: Tone
   /** Price axis on the right and dates along the bottom. */
   axes?: boolean
+  /** Dashed reference level, such as the previous close. */
+  reference?: { value: number; label: string }
   label: string
 }
 
 // Self-drawn SVG price chart: an area line or candlesticks, with a hover crosshair and tooltip.
-export function PriceChart({ bars: daily, kind, tone = 'light', axes = false, label }: PriceChartProps) {
+export function PriceChart({ bars: daily, kind, tone = 'light', axes = false, reference, label }: PriceChartProps) {
   const [ref, { width, height }] = useSize<HTMLDivElement>()
   const [hover, setHover] = useState<number | null>(null)
   const fillId = `pc-fill-${useId().replace(/:/g, '')}`
@@ -81,8 +83,9 @@ export function PriceChart({ bars: daily, kind, tone = 'light', axes = false, la
   const chart = useMemo(() => {
     const n = bars.length
     if (n < 2 || plotW <= 0 || plotH <= 0) return null
-    let min = Math.min(...bars.map((bar) => (kind === 'candles' ? bar.l : bar.c)))
-    let max = Math.max(...bars.map((bar) => (kind === 'candles' ? bar.h : bar.c)))
+    const levels = reference ? [reference.value] : []
+    let min = Math.min(...levels, ...bars.map((bar) => (kind === 'candles' ? bar.l : bar.c)))
+    let max = Math.max(...levels, ...bars.map((bar) => (kind === 'candles' ? bar.h : bar.c)))
     const margin = (max - min || Math.abs(max) || 1) * 0.08
     min -= margin
     max += margin
@@ -96,13 +99,13 @@ export function PriceChart({ bars: daily, kind, tone = 'light', axes = false, la
     const line = bars.map((bar, i) => `${i ? 'L' : 'M'}${x(i).toFixed(1)} ${y(bar.c).toFixed(1)}`).join('')
     const area = `${line}L${x(n - 1).toFixed(1)} ${pad.top + plotH}L${x(0).toFixed(1)} ${pad.top + plotH}Z`
     const bodyW = Math.max(1, Math.min(12, step * 0.62))
-    const dateStyle: 'day' | 'month' = spanDays(bars) > 330 ? 'month' : 'day'
+    const dateStyle = dateStyleFor(bars)
     const dateCount = Math.max(2, Math.floor(plotW / 110))
     const dates = Array.from({ length: dateCount }, (_, k) => Math.round(((k + 0.5) * (n - 1)) / dateCount))
     const prices = priceTicks(min, max, Math.max(2, Math.floor(plotH / 64)))
     const tickStep = prices.length > 1 ? prices[1] - prices[0] : 0
     return { n, x, y, indexAt, line, area, bodyW, dateStyle, dates, prices, tickStep }
-  }, [bars, kind, plotW, plotH, pad])
+  }, [bars, kind, plotW, plotH, pad, reference])
 
   const onPointerMove = (event: PointerEvent<SVGSVGElement>) => {
     if (!chart) return
@@ -133,6 +136,21 @@ export function PriceChart({ bars: daily, kind, tone = 'light', axes = false, la
               {chart.dates.map((i) => (
                 <text key={i} x={chart.x(i)} y={height - 8} textAnchor="middle">{formatDate(bars[i].d, chart.dateStyle)}</text>
               ))}
+            </g>
+          ) : null}
+
+          {reference ? (
+            <g className="pc-ref">
+              <title>{`${reference.label} ${formatPrice(reference.value)}`}</title>
+              <line x1={pad.left} x2={pad.left + plotW} y1={chart.y(reference.value)} y2={chart.y(reference.value)} />
+              {axes ? (
+                <>
+                  <rect x={width - pad.right + 2} y={chart.y(reference.value) - 10} width={pad.right - 2} height={20} />
+                  <text x={width - pad.right + 10} y={chart.y(reference.value)} dy="0.35em">{formatPrice(reference.value)}</text>
+                </>
+              ) : (
+                <text x={pad.left + plotW - 4} y={chart.y(reference.value) - 5} textAnchor="end">{reference.label} {formatPrice(reference.value)}</text>
+              )}
             </g>
           ) : null}
 
