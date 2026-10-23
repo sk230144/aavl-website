@@ -36,6 +36,9 @@
   --success-bg: rgba(22, 163, 74, 0.1);
   --danger: #ba1a1a;
   --danger-bg: rgba(220, 38, 38, 0.1);
+  /* Price up/down on dark surfaces (ticker, hero mockup). */
+  --up-on-dark: #62c98e;
+  --down-on-dark: #f2887e;
   /* Layered soft elevation: a tight contact shadow plus a wide, low-opacity ambient one. */
   --shadow: 0 1px 2px rgba(60, 24, 26, 0.05), 0 12px 32px -14px rgba(60, 24, 26, 0.18);
   --shadow-hover: 0 2px 4px rgba(60, 24, 26, 0.06), 0 26px 48px -18px rgba(60, 24, 26, 0.3);
@@ -210,11 +213,16 @@ main:focus {
   font-size: 12px;
 }
 
-/* ---------- Header: ticker + bar ---------- */
+/* ---------- Header: bar + ticker strip below it ---------- */
 .site-top {
   position: fixed;
   inset: 0 0 auto;
   z-index: 100;
+  transition: box-shadow 240ms ease;
+}
+
+.site-top.is-scrolled {
+  box-shadow: 0 10px 30px -12px rgba(60, 24, 26, 0.32);
 }
 
 .ticker {
@@ -229,8 +237,7 @@ main:focus {
   user-select: none;
 }
 
-.ticker-label,
-.ticker-end {
+.ticker-label {
   position: relative;
   z-index: 1;
   display: flex;
@@ -244,30 +251,54 @@ main:focus {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-}
-
-.ticker-label {
   border-right: 1px solid var(--dark-container);
-}
-
-.ticker-end {
-  border-left: 1px solid var(--dark-container);
-}
-
-.ticker-end:hover {
-  color: white;
 }
 
 .ticker-tape {
   flex: 1;
   min-width: 0;
   height: 100%;
+  overflow: hidden;
 }
 
-/* The widget iframe is 58px; centre its single line of quotes inside the shorter strip. */
-.ticker-tape .tradingview-widget-container {
-  height: 58px;
-  margin-top: calc((var(--ticker-h) - 58px) / 2);
+.ticker-marquee {
+  display: flex;
+  width: max-content;
+  height: 100%;
+  animation: marquee 80s linear infinite;
+}
+
+.ticker:hover .ticker-marquee {
+  animation-play-state: paused;
+}
+
+.ticker-group {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding-inline: 18px;
+  border-right: 1px solid var(--dark-container);
+  color: var(--dark-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.ticker-item b {
+  color: white;
+  font-weight: 600;
+}
+
+.ticker-item .is-up {
+  color: var(--up-on-dark);
+}
+
+.ticker-item .is-down {
+  color: var(--down-on-dark);
 }
 
 .ticker-loading {
@@ -390,11 +421,6 @@ main:focus {
   box-shadow: 0 1px 8px rgba(60, 24, 26, 0.04);
   -webkit-backdrop-filter: saturate(1.4) blur(10px);
   backdrop-filter: saturate(1.4) blur(10px);
-  transition: box-shadow 240ms ease;
-}
-
-.site-top.is-scrolled .site-header {
-  box-shadow: 0 10px 30px -12px rgba(60, 24, 26, 0.22);
 }
 
 .header-inner {
@@ -455,12 +481,12 @@ main:focus {
   letter-spacing: 0.24em;
 }
 
-.brand--inverse .brand-mark .q-dark {
-  fill: #ffffff;
-}
-
-.brand--inverse .brand-copy strong {
-  color: #ffffff;
+/* Light panel behind the logo on dark surfaces, with the brand's gold rule along the bottom. */
+.brand--plate {
+  padding: 16px 24px;
+  border-bottom: 3px solid var(--logo-gold);
+  background: var(--bg);
+  box-shadow: 0 18px 36px -18px rgba(0, 0, 0, 0.55);
 }
 
 .brand--lg .brand-mark {
@@ -1332,32 +1358,304 @@ main:focus {
   color: var(--gold);
 }
 
-/* ---------- TradingView widgets ---------- */
-.tv-widget {
+/* ---------- Market charts (self-drawn SVG, see components/MarketCharts.tsx) ---------- */
+.instrument-chart {
   position: relative;
-  overflow: hidden;
+  min-height: 0;
 }
 
-.tv-widget .tradingview-widget-container {
+.price-chart {
+  --chart-line: var(--primary);
+  --chart-fill: rgba(74, 26, 30, 0.14);
+  --chart-up: var(--success);
+  --chart-down: var(--danger);
+  --chart-grid: rgba(74, 26, 30, 0.07);
+  --chart-text: var(--faint);
+  --chart-cross: rgba(74, 26, 30, 0.4);
   position: relative;
-  z-index: 1;
   width: 100%;
   height: 100%;
+  overflow: hidden;
+  touch-action: pan-y;
 }
 
-.tv-widget .tradingview-widget-container__widget {
-  height: 100%;
+.price-chart--dark {
+  --chart-line: var(--logo-gold);
+  --chart-fill: rgba(211, 172, 74, 0.28);
+  --chart-up: var(--up-on-dark);
+  --chart-down: var(--down-on-dark);
+  --chart-grid: rgba(255, 255, 255, 0.06);
+  --chart-text: var(--dark-text);
+  --chart-cross: rgba(255, 255, 255, 0.4);
 }
 
-.tv-placeholder {
+.price-chart svg {
+  display: block;
+}
+
+.pc-fill-top {
+  stop-color: var(--chart-fill);
+}
+
+.pc-fill-bottom {
+  stop-color: var(--chart-fill);
+  stop-opacity: 0;
+}
+
+.pc-line {
+  fill: none;
+  stroke: var(--chart-line);
+  stroke-width: 1.75;
+  stroke-linejoin: round;
+}
+
+.pc-grid line {
+  stroke: var(--chart-grid);
+  shape-rendering: crispEdges;
+}
+
+.pc-grid text,
+.pc-last text {
+  fill: var(--chart-text);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-candles g {
+  shape-rendering: crispEdges;
+}
+
+.pc-candles .is-up {
+  fill: var(--chart-up);
+  stroke: var(--chart-up);
+}
+
+.pc-candles .is-down {
+  fill: var(--chart-down);
+  stroke: var(--chart-down);
+}
+
+.pc-candles rect {
+  stroke: none;
+}
+
+.pc-last {
+  color: var(--chart-text);
+}
+
+.pc-last.is-up {
+  color: var(--chart-up);
+}
+
+.pc-last.is-down {
+  color: var(--chart-down);
+}
+
+.pc-last line {
+  stroke: currentColor;
+  stroke-dasharray: 2 3;
+}
+
+.pc-last rect {
+  fill: currentColor;
+}
+
+.pc-last text {
+  fill: white;
+  font-weight: 600;
+}
+
+.pc-cross line {
+  stroke: var(--chart-cross);
+  stroke-dasharray: 4 4;
+}
+
+.pc-cross circle {
+  fill: var(--chart-line);
+}
+
+.pc-tip {
   position: absolute;
-  inset: 0;
-  z-index: 0;
-  transition: opacity 300ms ease;
+  top: 8px;
+  z-index: 2;
+  display: grid;
+  gap: 2px;
+  padding: 6px 9px;
+  transform: translateX(10px);
+  border: 1px solid var(--outline);
+  background: var(--white);
+  box-shadow: var(--shadow-sm);
+  color: var(--muted);
+  font-size: 11px;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
-.tv-widget.is-loaded .tv-placeholder {
-  opacity: 0;
+.pc-tip.is-left {
+  transform: translateX(calc(-100% - 10px));
+}
+
+.pc-tip b {
+  color: var(--text);
+  font-weight: 600;
+}
+
+.price-chart--dark .pc-tip {
+  border-color: var(--dark-container);
+  background: #1c1011;
+  color: var(--dark-text);
+}
+
+.price-chart--dark .pc-tip b {
+  color: white;
+}
+
+.quote-card {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+}
+
+.quote-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 16px 4px;
+}
+
+.quote-name {
+  display: grid;
+  min-width: 0;
+  gap: 2px;
+}
+
+.quote-name strong {
+  color: var(--text);
+  font-family: var(--font-brand);
+  font-size: 14px;
+}
+
+.quote-name span {
+  overflow: hidden;
+  color: var(--faint);
+  font-size: 11px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.quote-price {
+  display: grid;
+  flex: 0 0 auto;
+  justify-items: end;
+  gap: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.quote-price strong {
+  color: var(--text);
+  font-family: var(--font-brand);
+  font-size: 17px;
+}
+
+.quote-price span {
+  color: var(--faint);
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.quote-price .is-up {
+  color: var(--success);
+}
+
+.quote-price .is-down {
+  color: var(--danger);
+}
+
+.quote-chart {
+  flex: 1;
+}
+
+.quote-card--dark .quote-head {
+  padding: 0 4px 8px;
+}
+
+.quote-card--dark .quote-name strong,
+.quote-card--dark .quote-price strong {
+  color: #f5ece9;
+  font-size: 13px;
+}
+
+.quote-card--dark .quote-price .is-up {
+  color: var(--up-on-dark);
+}
+
+.quote-card--dark .quote-price .is-down {
+  color: var(--down-on-dark);
+}
+
+.main-market-chart {
+  display: flex;
+  flex-direction: column;
+}
+
+.main-market-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 18px 20px 10px;
+}
+
+.main-market-head .quote-head {
+  justify-content: flex-start;
+  gap: 32px;
+  padding: 0;
+}
+
+.main-market-head .quote-price {
+  justify-items: start;
+}
+
+.range-buttons {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--outline);
+  border-radius: var(--radius-sm);
+}
+
+.range-buttons button {
+  padding: 6px 12px;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: 600 12px var(--font-body);
+  cursor: pointer;
+}
+
+.range-buttons button + button {
+  border-left: 1px solid var(--outline);
+}
+
+.range-buttons button:hover {
+  background: var(--surface-low);
+}
+
+.range-buttons button[aria-pressed="true"] {
+  background: var(--primary);
+  color: white;
+}
+
+.range-buttons button:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: -2px;
+}
+
+.main-market-plot {
+  flex: 1;
+  padding: 0 0 4px 12px;
 }
 
 .chart-placeholder {
@@ -1391,19 +1689,10 @@ main:focus {
   background: rgba(28, 16, 17, 0.8);
 }
 
-.tv-credit {
+.market-note {
   margin: 16px 0 0;
   color: var(--faint);
   font-size: 11px;
-}
-
-.tv-credit a {
-  color: var(--primary);
-  font-weight: 600;
-}
-
-.tv-credit a:hover {
-  text-decoration: underline;
 }
 
 /* ---------- Hero device mockup ---------- */
@@ -3978,7 +4267,6 @@ tbody tr:last-child td {
     padding-inline: 16px;
   }
 
-  .ticker-end,
   .notice-band-end {
     display: none;
   }

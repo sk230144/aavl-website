@@ -30,9 +30,9 @@ import { NeuButton } from './components/NeuButton'
 import { NeuCard } from './components/NeuCard'
 import { Reveal } from './components/Reveal'
 import { SectionTitle } from './components/SectionTitle'
-import { ChartPlaceholder, DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
+import { DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
-import { TradingViewCredit, TradingViewWidget } from './components/TradingViewWidget'
+import { InstrumentChart, MainMarketChart, MarketAsOf, QuoteCard, TickerTape } from './components/MarketCharts'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
 import { InfoPage, pageTitles } from './pages/InfoPages'
@@ -75,27 +75,12 @@ function ExternalAwareLink({ href, className, children }: { href: string; classN
   )
 }
 
-// Top strip: scrolling stock and index prices from TradingView (BSE data; NSE is not licensed for free widgets).
+// Strip under the header: scrolling index, stock, currency and gold prices.
 function MarketTicker() {
   return (
     <div className="ticker">
       <div className="ticker-label"><span className="pulse-dot" aria-hidden="true" /> Markets</div>
-      <TradingViewWidget
-        widget="ticker-tape"
-        label="Market prices: SENSEX, BSE 500, large-cap stocks, USD/INR and gold"
-        className="ticker-tape"
-        placeholder={<span className="ticker-loading">Loading market prices…</span>}
-        config={{
-          symbols: market.tickerTape,
-          showSymbolLogo: true,
-          isTransparent: true,
-          // 'regular' keeps one line per symbol (58px tall) at every width; 'adaptive' falls back to the 84px stacked layout on phones.
-          displayMode: 'regular',
-          colorTheme: 'dark',
-          locale: 'en',
-        }}
-      />
-      <a className="ticker-end" href="#markets">Market snapshot <ChevronRight size={13} /></a>
+      <TickerTape ids={market.tickerTape} />
     </div>
   )
 }
@@ -166,7 +151,6 @@ function Header({ route }: { route: string }) {
 
   return (
     <div className={`site-top ${scrolled ? 'is-scrolled' : ''}`}>
-      <MarketTicker />
       <header className="site-header">
         <div className="container header-inner">
           <Logo />
@@ -188,6 +172,7 @@ function Header({ route }: { route: string }) {
           </div>
         </div>
       </header>
+      <MarketTicker />
       <AnimatePresence>
         {menuOpen ? (
           <motion.nav
@@ -241,9 +226,9 @@ const registrationCards = [
   },
 ]
 
-// Laptop + phone mockup in the spirit of a trading platform, showing real (BSE, delayed) TradingView charts.
+// Laptop + phone mockup in the spirit of a trading platform, showing real (delayed) SENSEX and BSE 500 charts.
 function DeviceStage() {
-  // The candlestick widget needs ~420px to show its price axis; phones get the compact overview chart instead.
+  // Candlesticks need ~420px to stay readable; phones get the area chart instead.
   const narrow = useMediaQuery('(max-width: 680px)')
   return (
     <div className="device-stage">
@@ -252,82 +237,24 @@ function DeviceStage() {
         <div className="device-bar">
           <span className="device-dots" aria-hidden="true"><i /><i /><i /></span>
           <span className="device-title">Market overview · S&amp;P BSE SENSEX</span>
-          <span className="device-chip"><span className="pulse-dot" aria-hidden="true" /> TradingView</span>
+          <span className="device-chip"><span className="pulse-dot" aria-hidden="true" /> BSE · delayed</span>
         </div>
-        {narrow ? (
-          <TradingViewWidget
-            key="sensex-mini"
-            widget="mini-symbol-overview"
-            label="SENSEX three-month chart"
-            className="device-screen"
-            placeholder={<ChartPlaceholder dark />}
-            config={{
-              symbol: market.headlineSymbol,
-              width: '100%',
-              height: '100%',
-              locale: 'en',
-              dateRange: '3M',
-              colorTheme: 'dark',
-              isTransparent: true,
-              autosize: true,
-              trendLineColor: 'rgba(211, 172, 74, 1)',
-              underLineColor: 'rgba(211, 172, 74, 0.28)',
-              underLineBottomColor: 'rgba(211, 172, 74, 0)',
-            }}
-          />
-        ) : (
-          <TradingViewWidget
-            key="sensex-candles"
-            widget="advanced-chart"
-            label="SENSEX daily candlestick chart"
-            className="device-screen"
-            placeholder={<ChartPlaceholder dark />}
-            config={{
-              autosize: true,
-              symbol: market.headlineSymbol,
-              interval: 'D',
-              timezone: 'Asia/Kolkata',
-              theme: 'dark',
-              style: '1',
-              locale: 'en',
-              backgroundColor: 'rgba(28, 18, 19, 1)',
-              gridColor: 'rgba(255, 255, 255, 0.05)',
-              hide_top_toolbar: true,
-              hide_side_toolbar: true,
-              hide_volume: true,
-              allow_symbol_change: false,
-              save_image: false,
-              calendar: false,
-              support_host: 'https://www.tradingview.com',
-            }}
-          />
-        )}
+        <InstrumentChart
+          id={market.headline}
+          months={narrow ? 3 : 6}
+          kind={narrow ? 'area' : 'candles'}
+          tone="dark"
+          axes={!narrow}
+          className="device-screen"
+        />
       </div>
       <div className="device-phone">
         <span className="device-notch" aria-hidden="true" />
         <div className="device-phone-head">
           <span>Watchlist</span>
-          <span>{market.phoneSymbol.label} · 1M</span>
+          <span>1M</span>
         </div>
-        <TradingViewWidget
-          widget="mini-symbol-overview"
-          label={`${market.phoneSymbol.label} one-month chart`}
-          className="device-phone-screen"
-          placeholder={<ChartPlaceholder dark text="Loading…" />}
-          config={{
-            symbol: market.phoneSymbol.symbol,
-            width: '100%',
-            height: '100%',
-            locale: 'en',
-            dateRange: '1M',
-            colorTheme: 'dark',
-            isTransparent: true,
-            autosize: true,
-            trendLineColor: 'rgba(211, 172, 74, 1)',
-            underLineColor: 'rgba(211, 172, 74, 0.28)',
-            underLineBottomColor: 'rgba(211, 172, 74, 0)',
-          }}
-        />
+        <QuoteCard id={market.phone} months={1} tone="dark" showName={false} className="device-phone-screen" />
         <div className="device-phone-actions" aria-hidden="true"><span>Sell</span><span>Buy</span></div>
       </div>
       <div className="float-card float-card--top">
@@ -541,64 +468,21 @@ function Markets() {
             title="Track the" accent="markets."
             description="Benchmark index, broad market, currency and gold charts. Use the range buttons to zoom from days to years."
           />
-          <span className="chip chip--gold">BSE data · delayed / end-of-day</span>
+          <span className="chip chip--gold">Delayed / end-of-day prices</span>
         </div>
         <div className="markets-grid">
           <NeuCard className="market-main">
-            <TradingViewWidget
-              widget="advanced-chart"
-              label="Interactive SENSEX chart"
-              className="market-main-chart"
-              lazy
-              placeholder={<ChartPlaceholder />}
-              config={{
-                autosize: true,
-                symbol: market.headlineSymbol,
-                interval: 'D',
-                range: '12M',
-                timezone: 'Asia/Kolkata',
-                theme: 'light',
-                style: '1',
-                locale: 'en',
-                backgroundColor: 'rgba(255, 255, 255, 1)',
-                gridColor: 'rgba(74, 26, 30, 0.06)',
-                withdateranges: true,
-                hide_side_toolbar: true,
-                allow_symbol_change: false,
-                save_image: false,
-                calendar: false,
-                support_host: 'https://www.tradingview.com',
-              }}
-            />
+            <MainMarketChart id={market.headline} className="market-main-chart" />
           </NeuCard>
           <div className="market-minis">
-            {market.miniCharts.map((chart) => (
-              <NeuCard key={chart.symbol} className="market-mini">
-                <TradingViewWidget
-                  widget="mini-symbol-overview"
-                  label={`${chart.label} one-month chart`}
-                  className="market-mini-chart"
-                  lazy
-                  placeholder={<ChartPlaceholder text={`Loading ${chart.label}…`} />}
-                  config={{
-                    symbol: chart.symbol,
-                    width: '100%',
-                    height: '100%',
-                    locale: 'en',
-                    dateRange: '1M',
-                    colorTheme: 'light',
-                    isTransparent: true,
-                    autosize: true,
-                    trendLineColor: 'rgba(74, 26, 30, 1)',
-                    underLineColor: 'rgba(74, 26, 30, 0.14)',
-                    underLineBottomColor: 'rgba(74, 26, 30, 0)',
-                  }}
-                />
+            {market.miniCharts.map((id) => (
+              <NeuCard key={id} className="market-mini">
+                <QuoteCard id={id} months={1} className="market-mini-chart" />
               </NeuCard>
             ))}
           </div>
         </div>
-        <TradingViewCredit note={market.credit} />
+        <p className="market-note"><MarketAsOf id={market.headline} />{market.credit}</p>
       </div>
     </section>
   )
@@ -1034,7 +918,7 @@ function Footer() {
       <div className="container">
         <div className="footer-top">
           <div className="footer-brand">
-            <Logo inverse large />
+            <Logo plate large />
             <p className="footer-legal-name">{siteData.company.legalName}</p>
             <p className="micro-label">CIN: {siteData.company.cin}</p>
             <p>Authorised Person of Sharekhan Ltd. (Mirae Asset Sharekhan), offering equity, derivatives and investment products with personal support from our registered office in Delhi.</p>

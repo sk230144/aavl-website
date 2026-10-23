@@ -5,7 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/fetch-market-data.mjs",
     "build": "vite build",
+    "market:update": "node scripts/fetch-market-data.mjs",
     "preview": "vite preview",
     "check": "tsc --noEmit"
   },

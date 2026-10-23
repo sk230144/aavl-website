@@ -10,10 +10,11 @@ export function BrandMark({ className = '' }: { className?: string }) {
   )
 }
 
-export function Logo({ inverse = false, large = false }: { inverse?: boolean; large?: boolean }) {
+// `plate` sits the logo on a light panel so it keeps its true colours on dark backgrounds.
+export function Logo({ plate = false, large = false }: { plate?: boolean; large?: boolean }) {
   return (
     <a
-      className={`brand ${inverse ? 'brand--inverse' : ''} ${large ? 'brand--lg' : ''}`}
+      className={`brand ${plate ? 'brand--plate' : ''} ${large ? 'brand--lg' : ''}`}
       href="#home"
       aria-label="Aggarwal & Aggarwal Ventures – home"
     >

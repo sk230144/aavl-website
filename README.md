@@ -26,7 +26,7 @@ All company copy, contact details, registration data, links, team members, holid
 
 ## Market data
 
-Prices and charts (top ticker, hero mockup, Market Snapshot section) use TradingView's free embed widgets via `src/components/TradingViewWidget.tsx`. The symbols are set in `siteData.market`. NSE symbols (NIFTY, BANKNIFTY) are not licensed for free widgets and show "only available on TradingView", so BSE symbols are used. BSE data in the free widgets is delayed / end-of-day.
+Prices and charts (top ticker, hero mockup, Market Snapshot section) are drawn by the site itself (`src/components/MarketCharts.tsx`, plain SVG, no third-party widget) from `public/market-data.json`. That file is written by `scripts/fetch-market-data.mjs`, which pulls daily prices from Yahoo Finance's public chart endpoint (no API key, but unofficial – replace `fetchDaily()` with a licensed feed if one is bought). It runs automatically before every `npm run build`; run `npm run market:update` to refresh it on its own. Prices are only as fresh as the last run, so schedule a daily rebuild/redeploy to keep them current. The instrument list lives in the script; `siteData.market` picks which ids appear where.
 
 To show real-time NSE prices, a licensed feed is required (for example Sharekhan's API under the AP agreement, or an NSE-authorised data vendor). Broker trading APIs such as Groww's Trade API are tied to one person's trading account, need a daily-expiring token and must be called from a server; they are not meant for publishing prices on a public website.
 

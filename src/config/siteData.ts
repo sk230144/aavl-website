@@ -92,29 +92,13 @@ export const siteData = {
       points: ['Minimum investment as per SEBI norms (₹10 lakh)', 'Distributed under ARN 20669'],
     },
   ],
-  // TradingView free-widget symbols. NSE symbols (NIFTY, BANKNIFTY) are not licensed for free widgets, so BSE is used.
+  // Instrument ids from public/market-data.json (see scripts/fetch-market-data.mjs for the symbol list).
   market: {
-    headlineSymbol: 'BSE:SENSEX',
-    phoneSymbol: { symbol: 'BSE:BSE500', label: 'BSE 500' },
-    miniCharts: [
-      { symbol: 'BSE:BSE500', label: 'BSE 500' },
-      { symbol: 'FX_IDC:USDINR', label: 'USD / INR' },
-      { symbol: 'TVC:GOLD', label: 'Gold (USD/oz)' },
-    ],
-    tickerTape: [
-      { proName: 'BSE:SENSEX', title: 'SENSEX' },
-      { proName: 'BSE:BSE500', title: 'BSE 500' },
-      { proName: 'BSE:RELIANCE', title: 'Reliance' },
-      { proName: 'BSE:HDFCBANK', title: 'HDFC Bank' },
-      { proName: 'BSE:TCS', title: 'TCS' },
-      { proName: 'BSE:INFY', title: 'Infosys' },
-      { proName: 'BSE:ICICIBANK', title: 'ICICI Bank' },
-      { proName: 'BSE:SBIN', title: 'SBI' },
-      { proName: 'BSE:ITC', title: 'ITC' },
-      { proName: 'FX_IDC:USDINR', title: 'USD/INR' },
-      { proName: 'TVC:GOLD', title: 'Gold (USD)' },
-    ],
-    credit: 'BSE data may be delayed or end-of-day. Shown for information only – not investment advice or a recommendation.',
+    headline: 'SENSEX',
+    phone: 'BSE500',
+    miniCharts: ['BSE500', 'USDINR', 'GOLD'],
+    tickerTape: ['SENSEX', 'NIFTY', 'BSE500', 'RELIANCE', 'HDFCBANK', 'TCS', 'INFY', 'ICICIBANK', 'SBIN', 'ITC', 'USDINR', 'GOLD'],
+    credit: 'Prices are delayed and may not reflect the current market. Shown for information only – not investment advice or a recommendation.',
   },
   trustPoints: [
     { title: 'Exchange-authorised', text: 'Authorised Person on NSE and BSE through Sharekhan Ltd.' },
