@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 // Shape of public/market-data.json, written by scripts/fetch-market-data.mjs.
 type RawInstrument = {
@@ -93,7 +93,70 @@ const parseMarketData = ({ updatedAt, instruments }: { updatedAt: string; instru
 
 const parseAavl99 = (raw: RawAavl99): Aavl99 => ({ ...raw, daily: raw.daily.map(toBar), intraday: raw.intraday.map(toBar) })
 
-export const useMarketData = () => useJson('market-data.json', parseMarketData)
+// Live quotes: the relay Worker (worker/src/index.js) is polled while the page is visible and its
+// prices replace the build-time snapshot's. Set VITE_QUOTES_URL at build time to enable it; without
+// it, or if the relay is unreachable, the snapshot is shown unchanged.
+type LiveQuote = Pick<Instrument, 'price' | 'change' | 'changePct' | 'asOf'>
+const QUOTES_URL = import.meta.env.VITE_QUOTES_URL as string | undefined
+const POLL_MS = 30_000
+
+let liveQuotes: Record<string, LiveQuote> | null = null
+const liveListeners = new Set<() => void>()
+let pollTimer: number | undefined
+
+async function pollQuotes() {
+  if (!QUOTES_URL) return
+  try {
+    const response = await fetch(QUOTES_URL, { cache: 'no-store' })
+    if (!response.ok) return
+    const { instruments } = (await response.json()) as { instruments: Record<string, LiveQuote> }
+    liveQuotes = instruments
+    liveListeners.forEach((listener) => listener())
+  } catch {
+    // Keep showing the last good quotes.
+  }
+}
+
+const onVisibility = () => {
+  if (document.visibilityState === 'visible') void pollQuotes()
+}
+
+function startPolling() {
+  void pollQuotes()
+  pollTimer = window.setInterval(() => document.visibilityState === 'visible' && void pollQuotes(), POLL_MS)
+  document.addEventListener('visibilitychange', onVisibility)
+}
+
+function stopPolling() {
+  window.clearInterval(pollTimer)
+  document.removeEventListener('visibilitychange', onVisibility)
+}
+
+function useLiveQuotes() {
+  const [, rerender] = useState(0)
+  useEffect(() => {
+    if (!QUOTES_URL) return
+    const listener = () => rerender((n) => n + 1)
+    liveListeners.add(listener)
+    if (liveListeners.size === 1) startPolling()
+    return () => {
+      liveListeners.delete(listener)
+      if (!liveListeners.size) stopPolling()
+    }
+  }, [])
+  return liveQuotes
+}
+
+export function useMarketData() {
+  const snapshot = useJson('market-data.json', parseMarketData)
+  const live = useLiveQuotes()
+  return useMemo(() => {
+    if (!snapshot || !live) return snapshot
+    const instruments = { ...snapshot.instruments }
+    for (const [id, quote] of Object.entries(live)) if (instruments[id]) instruments[id] = { ...instruments[id], ...quote }
+    return { ...snapshot, instruments }
+  }, [snapshot, live])
+}
 export const useAavl99 = () => useJson('aavl99.json', parseAavl99)
 
 const dayMs = 86_400_000

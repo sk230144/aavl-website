@@ -578,10 +578,6 @@ function Team() {
                   <div className={`avatar ${index % 3 === 2 || index === 3 ? 'avatar--dark' : ''}`} aria-hidden="true">{member.initials}</div>
                   <div><h3>{member.name}</h3><p>{member.role}</p></div>
                 </div>
-                <div className="team-card-body">
-                  <p className="micro-label">Focus areas</p>
-                  <p>{member.focus}</p>
-                </div>
               </NeuCard>
             </Reveal>
           ))}

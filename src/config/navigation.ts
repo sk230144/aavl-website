@@ -55,7 +55,7 @@ export const navigation: NavItem[] = [
           { label: 'Key Managerial Person', href: pages.keyManagerialPerson },
         ],
       },
-      ...siteData.services.slice(1).map((service) => ({ label: service.title, href: '#services' })),
+      ...siteData.services.slice(1).map((service) => ({ label: service.title, href: service.href })),
       { label: 'Open an Account', href: '#open-account' },
     ],
   },

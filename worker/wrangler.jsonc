@@ -1,0 +1,12 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "aavl-quotes",
+  "main": "src/index.js",
+  // Latest date supported by the installed runtime (workerd 1.20261023); bump with wrangler updates.
+  "compatibility_date": "2026-10-23",
+  "observability": {
+    "enabled": true,
+    "logs": { "enabled": true, "head_sampling_rate": 1 },
+    "traces": { "enabled": true, "head_sampling_rate": 0.01 }
+  }
+}

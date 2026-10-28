@@ -3,26 +3,10 @@
 // Source: Yahoo Finance (see yahoo.mjs). If a fetch fails, the previous file's data for that
 // instrument is kept so an offline build still works.
 import { readFile, writeFile } from 'node:fs/promises'
+import { INSTRUMENTS } from './instruments.mjs'
 import { fetchChart, localDate, round } from './yahoo.mjs'
 
 const OUT = new URL('../public/market-data.json', import.meta.url)
-
-// `range` is how much daily history to keep ('1d' = quote only, for the ticker); `ohlc` keeps
-// open/high/low for candlestick charts.
-const INSTRUMENTS = [
-  { id: 'SENSEX', label: 'SENSEX', name: 'S&P BSE SENSEX', yahoo: '^BSESN', range: '5y', ohlc: true },
-  { id: 'NIFTY', label: 'NIFTY 50', name: 'NIFTY 50', yahoo: '^NSEI', range: '1y' },
-  { id: 'BSE500', label: 'BSE 500', name: 'S&P BSE 500', yahoo: 'BSE-500.BO', range: '1y' },
-  { id: 'USDINR', label: 'USD/INR', name: 'US dollar / Indian rupee', yahoo: 'INR=X', range: '1y' },
-  { id: 'GOLD', label: 'Gold (USD)', name: 'Gold futures, USD per troy ounce', yahoo: 'GC=F', range: '1y' },
-  { id: 'RELIANCE', label: 'Reliance', name: 'Reliance Industries', yahoo: 'RELIANCE.BO', range: '1d' },
-  { id: 'HDFCBANK', label: 'HDFC Bank', name: 'HDFC Bank', yahoo: 'HDFCBANK.BO', range: '1d' },
-  { id: 'TCS', label: 'TCS', name: 'Tata Consultancy Services', yahoo: 'TCS.BO', range: '1d' },
-  { id: 'INFY', label: 'Infosys', name: 'Infosys', yahoo: 'INFY.BO', range: '1d' },
-  { id: 'ICICIBANK', label: 'ICICI Bank', name: 'ICICI Bank', yahoo: 'ICICIBANK.BO', range: '1d' },
-  { id: 'SBIN', label: 'SBI', name: 'State Bank of India', yahoo: 'SBIN.BO', range: '1d' },
-  { id: 'ITC', label: 'ITC', name: 'ITC', yahoo: 'ITC.BO', range: '1d' },
-]
 
 async function fetchDaily({ yahoo, range }) {
   const result = await fetchChart(yahoo, { range, interval: '1d' })

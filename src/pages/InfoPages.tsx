@@ -22,6 +22,7 @@ import { NeuButton } from '../components/NeuButton'
 import { NeuCard } from '../components/NeuCard'
 import { investorCharter as charter } from '../config/investorCharter'
 import { isExternal, pages } from '../config/navigation'
+import { serviceDetails, servicePath, type ServiceDetail } from '../config/serviceDetails'
 import { siteData } from '../config/siteData'
 import { AAVL99_ROUTE } from '../components/Aavl99'
 import { Aavl99Page } from './Aavl99Page'
@@ -76,36 +77,33 @@ function StockBrokingPage() {
       description="Trade in equity cash and equity derivatives on NSE and BSE through Sharekhan Ltd. (Mirae Asset Sharekhan), with personal support from our Delhi office."
       actions={<NeuButton href="#contact" variant="primary">Open an account <ArrowRight size={18} /></NeuButton>}
     >
-      <div className="page-grid">
-        <Panel icon={Landmark} label="Introduction" title="How it works">
-          <div className="prose">
-            <p>
-              {siteData.company.legalName} is an Authorised Person (AP) of Sharekhan Ltd., SEBI Reg. No. INZ000171337. Your trading
-              account, contract notes, margins, funds and securities are handled by Sharekhan Ltd. as your stock broker; our team helps you
-              with account opening, product information and day-to-day service.
-            </p>
-            <ul className="check-list">
-              <li><Check size={17} /> Equity cash market (CM) on NSE and BSE</li>
-              <li><Check size={17} /> Equity derivatives – Futures & Options (F&O) on NSE and BSE</li>
-              <li><Check size={17} /> Contract notes within 24 hours of trade execution, issued by Sharekhan Ltd.</li>
-              <li><Check size={17} /> Payments only to Sharekhan Ltd. through normal banking channels</li>
-            </ul>
-          </div>
-        </Panel>
-        <Panel icon={BadgeCheck} label="Registrations" title="Exchange registrations">
-          <div className="table-wrap">
-            <table>
-              <caption className="sr-only">Authorised Person registrations by exchange</caption>
-              <thead><tr><th>Exchange</th><th>AP Registration No.</th><th>Segments</th><th>Since</th></tr></thead>
-              <tbody>
-                {siteData.exchangeRegistrations.map((row) => (
-                  <tr key={row.exchange}><td>{row.exchange}</td><td>{row.apNumber}</td><td>{row.segments}</td><td>{row.since}</td></tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </Panel>
-      </div>
+      <Panel icon={Landmark} label="Introduction" title="How it works">
+        <div className="prose">
+          <p>
+            {siteData.company.legalName} is an Authorised Person (AP) of Sharekhan Ltd., SEBI Reg. No. INZ000171337. Your trading
+            account, contract notes, margins, funds and securities are handled by Sharekhan Ltd. as your stock broker; our team helps you
+            with account opening, product information and day-to-day service.
+          </p>
+          <ul className="check-list">
+            <li><Check size={17} /> Equity cash market (CM) on NSE and BSE</li>
+            <li><Check size={17} /> Equity derivatives – Futures & Options (F&O) on NSE and BSE</li>
+            <li><Check size={17} /> Contract notes within 24 hours of trade execution, issued by Sharekhan Ltd.</li>
+            <li><Check size={17} /> Payments only to Sharekhan Ltd. through normal banking channels</li>
+          </ul>
+        </div>
+        <h3 className="block-title">Exchange registrations</h3>
+        <div className="table-wrap">
+          <table>
+            <caption className="sr-only">Authorised Person registrations by exchange</caption>
+            <thead><tr><th>Exchange</th><th>AP Registration No.</th><th>Segments</th><th>Since</th></tr></thead>
+            <tbody>
+              {siteData.exchangeRegistrations.map((row) => (
+                <tr key={row.exchange}><td>{row.exchange}</td><td>{row.apNumber}</td><td>{row.segments}</td><td>{row.since}</td></tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Panel>
       <Panel icon={FileCheck2} label="Stock broking" title="Investor information">
         <div className="important-links-grid">
           {quickLinks.map((link) => (
@@ -413,10 +411,6 @@ function KeyManagerialPersonPage() {
                 <div className="avatar" aria-hidden="true">{member.initials}</div>
                 <div><h3>{member.name}</h3><p>{member.role}</p></div>
               </div>
-              <div className="team-card-body">
-                <p className="micro-label">Focus areas</p>
-                <p>{member.focus}</p>
-              </div>
             </NeuCard>
           ))}
         </div>
@@ -433,6 +427,41 @@ function NotFoundPage() {
   )
 }
 
+function ServicePage({ detail }: { detail: ServiceDetail }) {
+  const others = serviceDetails.filter((item) => item.slug !== detail.slug)
+  return (
+    <PageShell
+      section="Services"
+      title={detail.title}
+      description={detail.summary}
+      actions={<NeuButton href="#contact-form" variant="primary">Enquire now <ArrowRight size={18} /></NeuButton>}
+    >
+      <Panel icon={Landmark} label={detail.tag} title={`About ${detail.title}`}>
+        <div className="prose">
+          {detail.overview.map((paragraph) => <p key={paragraph}>{paragraph}</p>)}
+        </div>
+        {detail.facts ? <div className="service-facts"><KeyValueTable caption={`${detail.title} key facts`} rows={detail.facts} /></div> : null}
+      </Panel>
+      <div className="page-grid">
+        <Panel icon={BadgeCheck} label="What you get" title="Key points">
+          <ul className="check-list">{detail.features.map((item) => <li key={item}><Check size={17} /> {item}</li>)}</ul>
+        </Panel>
+        <Panel icon={ShieldCheck} label="Before you invest" title="Things to know">
+          <ul className="check-list">{detail.before.map((item) => <li key={item}><Check size={17} /> {item}</li>)}</ul>
+        </Panel>
+      </div>
+      <p className="notice"><AlertTriangle size={18} /><span><strong>{detail.risk}</strong> {siteData.servicesNote}</span></p>
+      <Panel icon={FileCheck2} label="Explore more" title="Other services">
+        <div className="important-links-grid">
+          {[{ label: 'Stock Broking', href: pages.stockBroking }, ...others.map((item) => ({ label: item.title, href: servicePath(item.slug) }))].map((link) => (
+            <a key={link.href} href={link.href} className="important-link"><span>{link.label}</span><ChevronRight size={18} /></a>
+          ))}
+        </div>
+      </Panel>
+    </PageShell>
+  )
+}
+
 const routes: Record<string, () => ReactNode> = {
   [pages.stockBroking]: StockBrokingPage,
   [pages.investorCharter]: InvestorCharterPage,
@@ -443,6 +472,7 @@ const routes: Record<string, () => ReactNode> = {
   [pages.authorisedPerson]: AuthorisedPersonPage,
   [pages.keyManagerialPerson]: KeyManagerialPersonPage,
   [AAVL99_ROUTE]: Aavl99Page,
+  ...Object.fromEntries(serviceDetails.map((detail) => [servicePath(detail.slug), () => <ServicePage detail={detail} />])),
 }
 
 export const pageTitles: Record<string, string> = {
@@ -455,6 +485,7 @@ export const pageTitles: Record<string, string> = {
   [pages.authorisedPerson]: 'Authorised Person',
   [pages.keyManagerialPerson]: 'Key Managerial Person',
   [AAVL99_ROUTE]: 'AAVL 99 Index',
+  ...Object.fromEntries(serviceDetails.map((detail) => [servicePath(detail.slug), detail.title])),
 }
 
 export function InfoPage({ route }: { route: string }) {

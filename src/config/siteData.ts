@@ -67,27 +67,27 @@ export const siteData = {
       points: ['Delivery and intraday equity', 'Contract notes from Sharekhan within 24 hours'],
     },
     {
-      title: 'Futures & Options', tag: 'F&O segment', icon: 'TrendingUp', href: '#contact', cta: 'Enquire',
+      title: 'Futures & Options', tag: 'F&O segment', icon: 'TrendingUp', href: '#/services/futures-options', cta: 'Learn more',
       description: 'Trade equity futures and options on NSE and BSE, with margins and settlement handled by Sharekhan Ltd.',
       points: ['Index and stock derivatives', 'Understand leverage and risk before trading'],
     },
     {
-      title: 'Mutual Funds', tag: 'Distribution', icon: 'Landmark', href: '#contact', cta: 'Enquire', accent: true,
+      title: 'Mutual Funds', tag: 'Distribution', icon: 'Landmark', href: '#/services/mutual-funds', cta: 'Learn more', accent: true,
       description: 'Invest in mutual fund schemes distributed by Mirae Asset Sharekhan, through SIP or lump sum.',
       points: ['SIP and lump-sum investing', 'Read all scheme documents before investing'],
     },
     {
-      title: 'Insurance', tag: 'Protection', icon: 'ShieldCheck', href: '#contact', cta: 'Enquire',
+      title: 'Insurance', tag: 'Protection', icon: 'ShieldCheck', href: '#/services/insurance', cta: 'Learn more',
       description: 'Life and health insurance solutions offered through Mirae Asset Sharekhan as a corporate agent.',
       points: ['Life and health cover', 'Sharekhan IRDAI Corporate Agent: CA0950'],
     },
     {
-      title: 'Portfolio Management (PMS)', tag: 'Experienced investors', icon: 'BriefcaseBusiness', href: '#contact', cta: 'Enquire', accent: true,
+      title: 'Portfolio Management (PMS)', tag: 'Experienced investors', icon: 'BriefcaseBusiness', href: '#/services/pms', cta: 'Learn more', accent: true,
       description: 'Professionally managed portfolios through Mirae Asset Sharekhan PMS (SEBI Reg. INP000005786).',
       points: ['Minimum investment as per SEBI norms (₹50 lakh)', 'Read the PMS disclosure document first'],
     },
     {
-      title: 'Specialized Investment Funds (SIF)', tag: 'New category', icon: 'ChartPie', href: '#contact', cta: 'Enquire',
+      title: 'Specialized Investment Funds (SIF)', tag: 'New category', icon: 'ChartPie', href: '#/services/sif', cta: 'Learn more',
       description: 'A SEBI-regulated fund category between mutual funds and PMS, distributed by Mirae Asset Sharekhan.',
       points: ['Minimum investment as per SEBI norms (₹10 lakh)', 'Distributed under ARN 20669'],
     },
@@ -117,12 +117,12 @@ export const siteData = {
   // Group or partner websites. The "Associated Sites" menu and section appear only once entries are added here.
   associatedSites: [] as { name: string; url: string; tag: string; description: string }[],
   team: [
-    { name: 'Mrs. Ritu Agarwal', role: 'Group Director', initials: 'RA', focus: 'Strategic direction, governance and oversight of the company.' },
-    { name: 'Mr. Om Aggarwal', role: 'Group Director', initials: 'OA', focus: 'Strategic direction, governance and oversight of the company.' },
-    { name: 'Mrs. Ashwini Amber Nalwar', role: 'Head – Human Resources', initials: 'AN', focus: 'People, hiring and team development.' },
-    { name: 'Mr. Chetan Bhadoriya', role: 'Company Secretary', initials: 'CB', focus: 'Corporate secretarial filings and statutory compliance.' },
-    { name: 'Mr. Chintan Agrawal', role: 'Chartered Accountant', initials: 'CA', focus: 'Accounts, audit and taxation.' },
-    { name: 'Ms. Riya Arora', role: 'Financial Analyst', initials: 'RA', focus: 'Market and financial analysis.' },
+    { name: 'Mrs. Ritu Agarwal', role: 'Group Director', initials: 'RA' },
+    { name: 'Mr. Om Aggarwal', role: 'Group Director', initials: 'OA' },
+    { name: 'Mrs. Ashwini Amber Nalwar', role: 'Head – Human Resources', initials: 'AN' },
+    { name: 'Mr. Chetan Bhadoriya', role: 'Company Secretary', initials: 'CB' },
+    { name: 'Mr. Chintan Agrawal', role: 'Chartered Accountant', initials: 'CA' },
+    { name: 'Ms. Riya Arora', role: 'Financial Analyst', initials: 'RA' },
   ],
   registrations: [
     { label: 'Legal corporate entity', value: 'Aggarwal & Aggarwal Ventures Private Limited', tone: 'primary' },

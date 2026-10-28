@@ -2709,7 +2709,7 @@ a.device-title:hover {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .avatar {
@@ -2760,6 +2760,18 @@ a.device-title:hover {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+}
+
+.prose .check-list {
+  margin-top: 18px;
+}
+
+.prose p + p {
+  margin-top: 12px;
+}
+
+.service-facts {
+  margin-top: 24px;
 }
 
 .team-card-body {

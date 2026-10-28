@@ -33,3 +33,14 @@ The **AAVL 99** index (hero laptop chart and the `#/aavl-99` detail page) is com
 To show real-time NSE prices, a licensed feed is required (for example Sharekhan's API under the AP agreement, or an NSE-authorised data vendor). Broker trading APIs such as Groww's Trade API are tied to one person's trading account, need a daily-expiring token and must be called from a server; they are not meant for publishing prices on a public website.
 
 Inner pages (Investor Charter, Investor Complaints, Fund Transfer, Authorised Person, etc.) live in `src/pages/InfoPages.tsx` and are addressed as `#/<slug>`. The header dropdown menus are defined in `src/config/navigation.ts`. Monthly complaint figures (`complaints`) and Sharekhan client bank accounts (`fundTransfer.accounts`) in `siteData.ts` are empty until supplied by compliance.
+
+## Live prices (ticker and quote cards)
+
+The site is static, and Yahoo Finance sends no CORS headers, so the page cannot fetch prices itself. Without a relay it shows the snapshot taken at build time (`public/market-data.json`). To make prices update while the page is open:
+
+1. Deploy the relay once: `cd worker && npm install && npx wrangler login && npx wrangler deploy`. Wrangler prints the URL, e.g. `https://aavl-quotes.<account>.workers.dev`.
+2. Rebuild the site with that URL: `VITE_QUOTES_URL=https://aavl-quotes.<account>.workers.dev npm run build`, then redeploy `dist/`.
+
+While a tab is visible the page polls the relay every 30 seconds (and again when the tab regains focus). The relay fetches all 12 instruments in a single Yahoo request and reuses the result for 20 seconds, so upstream traffic stays at a few requests a minute however many visitors there are. If the relay is down, the page keeps the last prices it had. The instrument list is shared in `scripts/instruments.mjs`.
+
+Yahoo's endpoint is unofficial and not licensed for redistribution. Moving to a licensed feed means replacing `fetchQuotes()` in `worker/src/index.js`.
