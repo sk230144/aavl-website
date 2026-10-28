@@ -23,6 +23,13 @@ export const siteData = {
     { label: 'Investor Corner', href: '#investor-corner' },
     { label: 'Contact', href: '#contact' },
   ],
+  // Announcement bar at the very top of the site. Edit freely; `href` can be a page (#/slug) or a section (#id).
+  updates: [
+    { tag: 'New', text: 'AAVL 99 Index – our own index of 99 stocks, now on the website', href: '#/aavl-99' },
+    { tag: 'Investors', text: 'Investor Charter: your rights, timelines and how to raise a complaint', href: '#/investor-charter' },
+    { tag: 'Reminder', text: 'Pay only to Sharekhan Limited from your registered bank account – never in cash', href: '#/fund-transfer' },
+    { tag: 'Calendar', text: 'Market holiday list 2026 – Mirae Asset Sharekhan', href: '#holidays' },
+  ],
   // Scrolling strip under the header. Deliberately notices, not prices: there is no licensed market-data feed.
   tickerNotices: [
     'NSE AP Reg. No. AP2069592873 (CM & F&O)',

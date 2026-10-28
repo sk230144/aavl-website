@@ -7,6 +7,8 @@ import {
   Building2,
   Check,
   ChevronRight,
+  Pause,
+  Play,
   Download,
   Eye,
   FileText,
@@ -33,7 +35,8 @@ import { SectionTitle } from './components/SectionTitle'
 import { DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
 import { Aavl99Chart, Aavl99Quote, AAVL99_ROUTE } from './components/Aavl99'
-import { MainMarketChart, MarketAsOf, QuoteCard, TickerTape } from './components/MarketCharts'
+import { formatPct, formatPrice, useAavl99 } from './components/marketData'
+import { MainMarketChart, MarketAsOf, QuoteCard, TickerTape, trend } from './components/MarketCharts'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
 import { InfoPage, pageTitles } from './pages/InfoPages'
@@ -76,7 +79,7 @@ function ExternalAwareLink({ href, className, children }: { href: string; classN
   )
 }
 
-// Strip under the header: scrolling index, stock, currency and gold prices.
+// Scrolling index, stock, currency and gold prices.
 function MarketTicker() {
   return (
     <div className="ticker">
@@ -102,6 +105,93 @@ function NoticeBand() {
         <div className="notice-marquee">{items(false)}{items(true)}</div>
       </div>
       <a className="notice-band-end" href={pages.investorCharter}>Investor Charter <ChevronRight size={13} /></a>
+    </div>
+  )
+}
+
+// Top bar: AAVL announcements, rotating. Pauses on hover/focus, has a pause button and dots, and can be dismissed for the session.
+function AnnouncementBar({ scrolled }: { scrolled: boolean }) {
+  const updates = siteData.updates
+  const reduceMotion = useReducedMotion()
+  const [index, setIndex] = useState(0)
+  const [paused, setPaused] = useState(false)
+  const [hovered, setHovered] = useState(false)
+  const [dismissed, setDismissed] = useState(() => {
+    try {
+      return sessionStorage.getItem('aavl-announce-dismissed') === '1'
+    } catch {
+      return false
+    }
+  })
+  const playing = !paused && !hovered && !reduceMotion && updates.length > 1
+
+  useEffect(() => {
+    if (!playing) return
+    const timer = window.setInterval(() => setIndex((value) => (value + 1) % updates.length), 5500)
+    return () => window.clearInterval(timer)
+  }, [playing, updates.length])
+
+  useEffect(() => {
+    document.documentElement.dataset.banner = dismissed ? 'off' : 'on'
+  }, [dismissed])
+
+  if (dismissed || !updates.length) return null
+  const current = updates[index]
+  const dismiss = () => {
+    setDismissed(true)
+    try {
+      sessionStorage.setItem('aavl-announce-dismissed', '1')
+    } catch {
+      // Dismissal then lasts only until the page reloads.
+    }
+  }
+
+  return (
+    <div
+      className={`announce ${scrolled ? 'is-collapsed' : ''}`}
+      role="region"
+      aria-label="AAVL updates"
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      onFocus={() => setHovered(true)}
+      onBlur={() => setHovered(false)}
+    >
+      <div className="container announce-inner">
+        <span className="announce-tag">{current.tag}</span>
+        <a key={index} className="announce-text" href={current.href}>
+          <span>{current.text}</span> <ArrowRight size={14} aria-hidden="true" />
+        </a>
+        {updates.length > 1 ? (
+          <div className="announce-controls">
+            <div className="announce-dots" role="group" aria-label="Choose update">
+              {updates.map((update, i) => (
+                <button key={update.text} type="button" className={i === index ? 'is-active' : ''} aria-label={`Update ${i + 1}: ${update.tag}`} aria-current={i === index} onClick={() => setIndex(i)} />
+              ))}
+            </div>
+            <button type="button" className="announce-icon" onClick={() => setPaused((value) => !value)} aria-label={paused ? 'Resume updates' : 'Pause updates'}>
+              {paused ? <Play size={13} /> : <Pause size={13} />}
+            </button>
+          </div>
+        ) : null}
+        <button type="button" className="announce-icon" onClick={dismiss} aria-label="Dismiss updates"><X size={15} /></button>
+      </div>
+    </div>
+  )
+}
+
+// Right side of the logo row: the AAVL 99 index quote plus the scrolling stock, index and currency prices.
+function HeaderQuotes() {
+  const aavl99 = useAavl99()
+  return (
+    <div className="header-quotes">
+      {aavl99 ? (
+        <a className="hq-chip" href={AAVL99_ROUTE} aria-label={`AAVL 99 index ${formatPrice(aavl99.value)}, ${formatPct(aavl99.changePct)}. Open details`}>
+          <span className="hq-name">AAVL 99</span>
+          <strong>{formatPrice(aavl99.value)}</strong>
+          <span className={trend(aavl99.change)}>{aavl99.change >= 0 ? '▲' : '▼'} {formatPct(aavl99.changePct)}</span>
+        </a>
+      ) : null}
+      <MarketTicker />
     </div>
   )
 }
@@ -161,10 +251,11 @@ function Header({ route }: { route: string }) {
 
   return (
     <div className={`site-top ${scrolled ? 'is-scrolled' : ''}`}>
+      <AnnouncementBar scrolled={scrolled} />
       <header className="site-header">
-        <div className="container header-inner">
+        <div className="container brand-row">
           <Logo />
-          <DesktopNav items={navigation} currentHash={route || `#${activeSection}`} />
+          <HeaderQuotes />
           <div className="header-actions">
             <a className="header-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
             <NeuButton href="#contact" variant="primary" className="header-cta">
@@ -181,8 +272,12 @@ function Header({ route }: { route: string }) {
             </button>
           </div>
         </div>
+        <div className="nav-row">
+          <div className="container">
+            <DesktopNav items={navigation} currentHash={route || `#${activeSection}`} />
+          </div>
+        </div>
       </header>
-      <MarketTicker />
       <AnimatePresence>
         {menuOpen ? (
           <motion.div

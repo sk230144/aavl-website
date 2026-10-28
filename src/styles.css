@@ -48,9 +48,11 @@
   /* Buttons and form controls are softly rounded; cards and panels stay square. */
   --radius: 10px;
   --radius-sm: 8px;
-  --ticker-h: 36px;
-  --header-h: 64px;
-  --top-h: calc(var(--ticker-h) + var(--header-h));
+  --banner-h: 34px;
+  --brand-h: 64px;
+  --nav-h: 44px;
+  --ticker-h: 40px;
+  --top-h: calc(var(--banner-h) + var(--brand-h) + var(--nav-h));
   --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
   --font-brand: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: Geist, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -214,6 +216,10 @@ main:focus {
 }
 
 /* ---------- Header: bar + ticker strip below it ---------- */
+:root[data-banner="off"] {
+  --banner-h: 0px;
+}
+
 .site-top {
   position: fixed;
   inset: 0 0 auto;
@@ -423,12 +429,219 @@ main:focus {
   backdrop-filter: saturate(1.4) blur(10px);
 }
 
-.header-inner {
+/* Logo row: logo left, AAVL 99 + stock prices in the middle, call / open-account right. */
+.brand-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  height: var(--brand-h);
+  gap: 24px;
+}
+
+.header-quotes {
+  display: flex;
+  align-items: stretch;
+  justify-self: end;
+  width: 100%;
+  max-width: 640px;
+  min-width: 0;
+  height: 42px;
+  gap: 10px;
+}
+
+.hq-chip {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--white);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition: border-color 150ms ease;
+}
+
+.hq-chip:hover {
+  border-color: var(--primary);
+}
+
+.hq-name {
+  color: var(--gold);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+
+.hq-chip strong {
+  color: var(--primary);
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 400;
+}
+
+.hq-chip .is-up {
+  color: var(--up-on-light, #15803d);
+}
+
+.hq-chip .is-down {
+  color: var(--down-on-light, #b91c1c);
+}
+
+.hq-chip span:last-child {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.header-quotes .ticker {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  border-radius: var(--radius-sm);
+}
+
+/* Menu row below the logo row. */
+.nav-row {
+  border-top: 1px solid var(--hairline);
+  background: color-mix(in srgb, var(--surface-low) 55%, var(--white));
+}
+
+.nav-row .container {
+  display: flex;
+  align-items: stretch;
+  height: var(--nav-h);
+}
+
+/* Announcement bar. */
+.announce {
+  height: var(--banner-h);
+  overflow: hidden;
+  background: linear-gradient(90deg, var(--dark), var(--primary) 70%, var(--primary-container));
+  color: white;
+  font-size: 13px;
+  transition: height 240ms var(--ease-out);
+}
+
+.announce.is-collapsed {
+  height: 0;
+}
+
+.announce-inner {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  height: var(--header-h);
-  gap: 18px;
+  height: var(--banner-h);
+  gap: 14px;
+}
+
+.announce-tag {
+  flex: 0 0 auto;
+  padding: 2px 9px;
+  border-radius: 4px;
+  background: var(--logo-gold);
+  color: var(--dark);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.announce-text {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-weight: 500;
+  animation: announce-in 360ms var(--ease-out);
+}
+
+.announce-text span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.announce-text svg {
+  flex: 0 0 auto;
+  color: var(--gold-light);
+  transition: transform 200ms var(--ease-out);
+}
+
+.announce-text:hover {
+  text-decoration: underline;
+}
+
+.announce-text:hover svg {
+  transform: translateX(3px);
+}
+
+@keyframes announce-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+.announce-controls {
+  display: flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 10px;
+}
+
+.announce-dots {
+  display: flex;
+  gap: 2px;
+}
+
+/* 24px tap targets around 8px dots. */
+.announce-dots button {
+  display: grid;
+  width: 24px;
+  height: 24px;
+  place-items: center;
+  border: 0;
+  background: none;
+  cursor: pointer;
+}
+
+.announce-dots button::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  transition: background-color 150ms ease, transform 150ms ease;
+}
+
+.announce-dots button.is-active::before {
+  background: var(--logo-gold);
+  transform: scale(1.25);
+}
+
+.announce-icon {
+  display: grid;
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  place-items: center;
+  border: 0;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  cursor: pointer;
+}
+
+.announce-icon:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .announce-text {
+    animation: none;
+  }
 }
 
 .brand {
@@ -1120,7 +1333,7 @@ main:focus {
 .hero {
   position: relative;
   overflow: hidden;
-  padding: calc(var(--top-h) + 30px) 0 56px;
+  padding: calc(var(--top-h) + 6px) 0 48px;
   border-bottom: 1px solid var(--hairline);
   background:
     radial-gradient(50% 60% at 88% 34%, rgba(211, 172, 74, 0.16), transparent 70%),
@@ -1147,7 +1360,7 @@ main:focus {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .pill {
@@ -1196,7 +1409,7 @@ main:focus {
 }
 
 .hero-copy h1 {
-  margin-bottom: 18px;
+  margin-bottom: 14px;
   color: var(--primary);
   font-size: clamp(2.6rem, 3.9vw, 3.5rem);
   font-weight: 400;
@@ -1250,7 +1463,7 @@ main:focus {
   grid-template-columns: repeat(3, 1fr);
   gap: 16px;
   max-width: 600px;
-  margin: 28px 0 0;
+  margin: 22px 0 0;
   padding-top: 16px;
   border-top: 1px solid var(--surface-highest);
 }
@@ -4424,8 +4637,38 @@ tbody tr:last-child td {
 }
 
 @media (max-width: 1279px) {
-  .desktop-nav {
+  :root {
+    --top-h: calc(var(--banner-h) + 58px + var(--ticker-h));
+  }
+
+  .nav-row {
     display: none;
+  }
+
+  .brand-row {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "logo actions"
+      "quotes quotes";
+    grid-template-rows: 58px var(--ticker-h);
+    height: auto;
+    gap: 0 12px;
+  }
+
+  .brand-row > .brand {
+    grid-area: logo;
+  }
+
+  .brand-row > .header-actions {
+    grid-area: actions;
+  }
+
+  .header-quotes {
+    grid-area: quotes;
+    justify-self: stretch;
+    max-width: none;
+    height: auto;
+    padding-bottom: 0;
   }
 }
 
@@ -4570,8 +4813,25 @@ tbody tr:last-child td {
 
 @media (max-width: 680px) {
   :root {
+    --banner-h: 30px;
     --ticker-h: 36px;
-    --header-h: 58px;
+  }
+
+  .announce {
+    font-size: 12px;
+  }
+
+  .announce-dots,
+  .announce-tag {
+    display: none;
+  }
+
+  .hq-chip {
+    display: none;
+  }
+
+  .header-quotes .ticker {
+    border-radius: 0;
   }
 
   .container {
