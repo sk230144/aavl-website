@@ -179,7 +179,7 @@ function AnnouncementBar({ scrolled }: { scrolled: boolean }) {
   )
 }
 
-// Right side of the logo row: the AAVL 99 index quote plus the scrolling stock, index and currency prices.
+// Right side of the logo row: the AAVL 99 index quote.
 function HeaderQuotes() {
   const aavl99 = useAavl99()
   return (
@@ -191,7 +191,6 @@ function HeaderQuotes() {
           <span className={trend(aavl99.change)}>{aavl99.change >= 0 ? '▲' : '▼'} {formatPct(aavl99.changePct)}</span>
         </a>
       ) : null}
-      <MarketTicker />
     </div>
   )
 }
@@ -278,6 +277,7 @@ function Header({ route }: { route: string }) {
           </div>
         </div>
       </header>
+      <MarketTicker />
       <AnimatePresence>
         {menuOpen ? (
           <motion.div

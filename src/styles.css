@@ -48,11 +48,11 @@
   /* Buttons and form controls are softly rounded; cards and panels stay square. */
   --radius: 10px;
   --radius-sm: 8px;
-  --banner-h: 34px;
-  --brand-h: 64px;
-  --nav-h: 44px;
-  --ticker-h: 40px;
-  --top-h: calc(var(--banner-h) + var(--brand-h) + var(--nav-h));
+  --banner-h: 32px;
+  --brand-h: 60px;
+  --nav-h: 40px;
+  --ticker-h: 36px;
+  --top-h: calc(var(--banner-h) + var(--brand-h) + var(--nav-h) + var(--ticker-h));
   --font-display: "DM Serif Display", Georgia, "Times New Roman", serif;
   --font-brand: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
   --font-body: Geist, "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
@@ -446,7 +446,6 @@ main:focus {
   max-width: 640px;
   min-width: 0;
   height: 42px;
-  gap: 10px;
 }
 
 .hq-chip {
@@ -494,13 +493,6 @@ main:focus {
   font-weight: 600;
 }
 
-.header-quotes .ticker {
-  flex: 1;
-  min-width: 0;
-  height: 100%;
-  border: 0;
-  border-radius: var(--radius-sm);
-}
 
 /* Menu row below the logo row. */
 .nav-row {
@@ -4641,34 +4633,15 @@ tbody tr:last-child td {
     --top-h: calc(var(--banner-h) + 58px + var(--ticker-h));
   }
 
-  .nav-row {
+  .nav-row,
+  .header-quotes {
     display: none;
   }
 
   .brand-row {
     grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "logo actions"
-      "quotes quotes";
-    grid-template-rows: 58px var(--ticker-h);
-    height: auto;
-    gap: 0 12px;
-  }
-
-  .brand-row > .brand {
-    grid-area: logo;
-  }
-
-  .brand-row > .header-actions {
-    grid-area: actions;
-  }
-
-  .header-quotes {
-    grid-area: quotes;
-    justify-self: stretch;
-    max-width: none;
-    height: auto;
-    padding-bottom: 0;
+    height: 58px;
+    gap: 12px;
   }
 }
 
@@ -4826,13 +4799,6 @@ tbody tr:last-child td {
     display: none;
   }
 
-  .hq-chip {
-    display: none;
-  }
-
-  .header-quotes .ticker {
-    border-radius: 0;
-  }
 
   .container {
     padding-inline: 16px;
