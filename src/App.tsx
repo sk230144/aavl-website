@@ -148,6 +148,15 @@ function Header({ route }: { route: string }) {
     }
   }, [menuOpen])
 
+  useEffect(() => {
+    if (!menuOpen) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setMenuOpen(false)
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [menuOpen])
+
   const closeMenu = () => setMenuOpen(false)
 
   return (
@@ -176,24 +185,37 @@ function Header({ route }: { route: string }) {
       <MarketTicker />
       <AnimatePresence>
         {menuOpen ? (
-          <motion.nav
-            id="mobile-navigation"
-            className="mobile-nav"
-            aria-label="Mobile navigation"
+          <motion.div
+            className="mobile-nav-backdrop"
             initial={reduceMotion ? false : { opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2 }}
+            onPointerDown={(event) => {
+              if (event.target === event.currentTarget) closeMenu()
+            }}
           >
-            <div className="container mobile-nav-inner">
-              <MobileNavList items={navigation} onNavigate={closeMenu} />
-              <NeuButton href="#contact" variant="primary" onClick={closeMenu}>
-                Open Demat Account <ArrowRight size={18} className="btn-arrow" />
-              </NeuButton>
-              <a className="mobile-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
-              <p className="mobile-partner">{siteData.company.partnerLine}</p>
-            </div>
-          </motion.nav>
+            <motion.nav
+              id="mobile-navigation"
+              className="mobile-nav"
+              aria-label="Mobile navigation"
+              initial={reduceMotion ? false : { y: '100%' }}
+              animate={{ y: 0 }}
+              exit={{ y: '100%' }}
+              transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+              onPointerDown={(event) => event.stopPropagation()}
+            >
+              <div className="mobile-sheet-handle" aria-hidden="true" />
+              <div className="container mobile-nav-inner">
+                <MobileNavList items={navigation} onNavigate={closeMenu} />
+                <NeuButton href="#contact" variant="primary" onClick={closeMenu}>
+                  Open Demat Account <ArrowRight size={18} className="btn-arrow" />
+                </NeuButton>
+                <a className="mobile-phone" href={telHref(siteData.company.phone)}><Phone size={16} /> {siteData.company.phone}</a>
+                <p className="mobile-partner">{siteData.company.partnerLine}</p>
+              </div>
+            </motion.nav>
+          </motion.div>
         ) : null}
       </AnimatePresence>
     </div>

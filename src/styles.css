@@ -678,14 +678,38 @@ main:focus {
   border-color: var(--primary);
 }
 
-.mobile-nav {
+.mobile-nav-backdrop {
   position: fixed;
   inset: var(--top-h) 0 0;
   z-index: 90;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-top: 24px;
+  background: rgba(17, 22, 31, 0.46);
+  cursor: pointer;
+}
+
+.mobile-nav {
+  position: relative;
+  width: min(100%, 720px);
+  max-height: min(80dvh, calc(100dvh - var(--top-h) - 24px));
   overflow-y: auto;
   overscroll-behavior: contain;
-  border-top: 1px solid var(--hairline);
+  border: 1px solid var(--hairline);
+  border-bottom: 0;
+  border-radius: 20px 20px 0 0;
   background: var(--white);
+  box-shadow: 0 -18px 52px rgba(17, 22, 31, 0.24);
+  cursor: auto;
+}
+
+.mobile-sheet-handle {
+  width: 44px;
+  height: 4px;
+  margin: 10px auto 2px;
+  border-radius: 99px;
+  background: var(--outline);
 }
 
 .mobile-nav-inner {
@@ -4874,6 +4898,17 @@ tbody tr:last-child td {
 
   .mobile-nav-inner {
     padding-bottom: 110px;
+  }
+
+  .mobile-nav-backdrop {
+    padding-top: 16px;
+  }
+
+  .mobile-nav {
+    width: 100%;
+    max-height: min(80dvh, calc(100dvh - var(--top-h) - 16px));
+    border-right: 0;
+    border-left: 0;
   }
 
   /* Hero */
