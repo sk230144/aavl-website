@@ -271,13 +271,13 @@ function Header({ route }: { route: string }) {
             </button>
           </div>
         </div>
+        <MarketTicker />
         <div className="nav-row">
           <div className="container">
             <DesktopNav items={navigation} currentHash={route || `#${activeSection}`} />
           </div>
         </div>
       </header>
-      <MarketTicker />
       <AnimatePresence>
         {menuOpen ? (
           <motion.div
