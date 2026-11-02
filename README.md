@@ -34,13 +34,15 @@ To show real-time NSE prices, a licensed feed is required (for example Sharekhan
 
 Inner pages (Investor Charter, Investor Complaints, Fund Transfer, Authorised Person, etc.) live in `src/pages/InfoPages.tsx` and are addressed as `#/<slug>`. The header dropdown menus are defined in `src/config/navigation.ts`. Monthly complaint figures (`complaints`) and Sharekhan client bank accounts (`fundTransfer.accounts`) in `siteData.ts` are empty until supplied by compliance.
 
-## Live prices (ticker and quote cards)
+## Live prices (ticker, charts and AAVL 99)
 
-The site is static, and Yahoo Finance sends no CORS headers, so the page cannot fetch prices itself. Without a relay it shows the snapshot taken at build time (`public/market-data.json`). To make prices update while the page is open:
+The site is static, and Yahoo Finance sends no CORS headers, so the page cannot fetch prices itself. Without a relay it shows the snapshot taken at build time (`public/market-data.json`, `public/aavl99.json`). With the relay Worker in `worker/`, the ticker, quote cards, the hero's AAVL 99 / NIFTY 50 / SENSEX charts, the market snapshot chart and the `#/aavl-99` page all update while the page is open:
 
 1. Deploy the relay once: `cd worker && npm install && npx wrangler login && npx wrangler deploy`. Wrangler prints the URL, e.g. `https://aavl-quotes.<account>.workers.dev`.
 2. Rebuild the site with that URL: `VITE_QUOTES_URL=https://aavl-quotes.<account>.workers.dev npm run build`, then redeploy `dist/`.
 
-While a tab is visible the page polls the relay every 30 seconds (and again when the tab regains focus). The relay fetches all 12 instruments in a single Yahoo request and reuses the result for 20 seconds, so upstream traffic stays at a few requests a minute however many visitors there are. If the relay is down, the page keeps the last prices it had. The instrument list is shared in `scripts/instruments.mjs`.
+The relay has two feeds: `/quotes` (the instruments in `scripts/instruments.mjs`, with each index's 1-minute session line) and `/aavl99` (the index recomputed from its 99 stocks' current prices, using the weights `scripts/fetch-aavl99.mjs` writes to `worker/src/aavl99-basis.json` – **redeploy the Worker after editing `constituents.csv`**). While a tab is visible the page polls every 10 seconds; the relay reuses each upstream result for 10 s (quotes) and 15 s (AAVL 99), so Yahoo sees a few requests a minute however many visitors there are. Polling every second would not show fresher prices – Yahoo's own data moves in roughly one-minute steps – and would risk the relay being rate-limited. The hero shows **Live** while prices are moving, **Market closed** after hours and **Delayed** when no relay is configured. If the relay is down, the page keeps the last prices it had.
 
-Yahoo's endpoint is unofficial and not licensed for redistribution. Moving to a licensed feed means replacing `fetchQuotes()` in `worker/src/index.js`.
+To try it locally: `cd worker && npx wrangler dev`, then `VITE_QUOTES_URL=http://localhost:8787 npm run dev` in the project root.
+
+Yahoo's endpoint is unofficial and not licensed for redistribution. Moving to a licensed feed means replacing `fetchSpark()` in `worker/src/index.js` (and `scripts/yahoo.mjs` for the build snapshot).

@@ -34,7 +34,7 @@ import { Reveal } from './components/Reveal'
 import { SectionTitle } from './components/SectionTitle'
 import { DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
-import { Aavl99Chart, Aavl99Quote, AAVL99_ROUTE } from './components/Aavl99'
+import { AAVL99_ROUTE, HeroIndexChart, IndexQuote, LiveBadge, type IndexId } from './components/Aavl99'
 import { formatPct, formatPrice, useAavl99 } from './components/marketData'
 import { MainMarketChart, MarketAsOf, QuoteCard, TickerTape, trend } from './components/MarketCharts'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
@@ -348,16 +348,17 @@ const registrationCards = [
 function DeviceStage() {
   // Axis labels need ~420px; phones get the bare chart.
   const narrow = useMediaQuery('(max-width: 680px)')
+  const [index, setIndex] = useState<IndexId>('AAVL99')
   return (
     <div className="device-stage">
       <div className="device-glow" aria-hidden="true" />
       <div className="device-desktop">
         <div className="device-bar">
           <span className="device-dots" aria-hidden="true"><i /><i /><i /></span>
-          <a className="device-title" href={AAVL99_ROUTE}>AAVL 99 Index</a>
-          <Aavl99Quote className="device-quote" />
+          <IndexQuote index={index} className="device-quote" />
+          <LiveBadge />
         </div>
-        <Aavl99Chart tone="dark" axes={!narrow} detailsLink className="device-screen" />
+        <HeroIndexChart index={index} onIndexChange={setIndex} axes={!narrow} className="device-screen" />
       </div>
       <div className="device-phone">
         <span className="device-notch" aria-hidden="true" />
@@ -1016,8 +1017,8 @@ function Footer() {
             <h2>Registration credentials</h2>
             <dl className="footer-table">
               <div><dt>Stock broker SEBI Reg.</dt><dd>INZ000171337</dd></div>
-              <div><dt>NSE AP Reg. No.</dt><dd>AP2069592873 (CM, F&amp;O)</dd></div>
-              <div><dt>BSE AP Reg. No.</dt><dd>AP01074801179851 (Eq, Deriv)</dd></div>
+              <div><dt>NSE Reg. No.</dt><dd>AP2069592873 (CM, F&amp;O)</dd></div>
+              <div><dt>BSE Reg. No.</dt><dd>AP01074801179851 (Eq, Deriv)</dd></div>
               <div><dt>NSE Member ID</dt><dd>10733</dd></div>
               <div><dt>BSE Member ID</dt><dd>748</dd></div>
             </dl>

@@ -4,7 +4,7 @@
 // instrument is kept so an offline build still works.
 import { readFile, writeFile } from 'node:fs/promises'
 import { INSTRUMENTS } from './instruments.mjs'
-import { fetchChart, localDate, round } from './yahoo.mjs'
+import { fetchChart, localDate, localMinute, round } from './yahoo.mjs'
 
 const OUT = new URL('../public/market-data.json', import.meta.url)
 
@@ -20,6 +20,13 @@ async function fetchDaily({ yahoo, range }) {
     else bars.push(bar)
   })
   return { meta: result.meta, bars }
+}
+
+// Latest session in 5-minute steps, as [IST minute, close] rows.
+async function fetchIntraday({ yahoo }) {
+  const result = await fetchChart(yahoo, { range: '1d', interval: '5m' })
+  const { close } = result.indicators.quote[0]
+  return result.timestamp.flatMap((time, i) => (close[i] == null ? [] : [[localMinute(time, result.meta.gmtoffset), round(close[i])]]))
 }
 
 async function buildInstrument(instrument) {
@@ -42,6 +49,7 @@ async function buildInstrument(instrument) {
     bars: keepSeries
       ? bars.map((b) => (instrument.ohlc ? [b.d, round(b.o), round(b.h), round(b.l), round(b.c)] : [b.d, round(b.c)]))
       : [],
+    ...(instrument.intraday ? { prevClose: round(prev), intraday: await fetchIntraday(instrument) } : {}),
   }
 }
 

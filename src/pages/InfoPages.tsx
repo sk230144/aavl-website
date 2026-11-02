@@ -95,7 +95,7 @@ function StockBrokingPage() {
         <div className="table-wrap">
           <table>
             <caption className="sr-only">Authorised Person registrations by exchange</caption>
-            <thead><tr><th>Exchange</th><th>AP Registration No.</th><th>Segments</th><th>Since</th></tr></thead>
+            <thead><tr><th>Exchange</th><th>Reg. No.</th><th>Segments</th><th>Since</th></tr></thead>
             <tbody>
               {siteData.exchangeRegistrations.map((row) => (
                 <tr key={row.exchange}><td>{row.exchange}</td><td>{row.apNumber}</td><td>{row.segments}</td><td>{row.since}</td></tr>
@@ -375,7 +375,7 @@ function AuthorisedPersonPage() {
         <div className="table-wrap">
           <table>
             <caption className="sr-only">Exchange-wise trading member and Authorised Person details</caption>
-            <thead><tr><th>Exchange</th><th>Clearing / Member ID</th><th>AP Registration No.</th><th>Investor Service Cell</th></tr></thead>
+            <thead><tr><th>Exchange</th><th>Clearing / Member ID</th><th>Reg. No.</th><th>Investor Service Cell</th></tr></thead>
             <tbody>
               {siteData.exchangeRegistrations.map((row) => (
                 <tr key={row.exchange}><td>{row.exchange}</td><td>{row.memberId}</td><td>{row.apNumber}</td><td>{row.serviceCell}</td></tr>

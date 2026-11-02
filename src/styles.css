@@ -48,7 +48,7 @@
   /* Buttons and form controls are softly rounded; cards and panels stay square. */
   --radius: 10px;
   --radius-sm: 8px;
-  --banner-h: 32px;
+  --banner-h: 42px;
   --brand-h: 60px;
   --nav-h: 40px;
   --ticker-h: 36px;
@@ -1978,25 +1978,23 @@ main:focus {
   background: var(--gold-light);
 }
 
-.device-title {
+/* Kept at the left: the right end of the bar sits under the floating registration card. */
+.device-quote {
+  display: inline-flex;
+  min-width: 0;
   flex: 0 1 auto;
+  gap: 8px;
   overflow: hidden;
-  color: #f5ece9;
-  text-overflow: ellipsis;
+  font-variant-numeric: tabular-nums;
   white-space: nowrap;
 }
 
-a.device-title:hover {
-  color: var(--gold-light);
+.device-quote > :first-child {
+  color: #f5ece9;
 }
 
-/* Kept beside the title: the right end of the bar sits under the floating registration card. */
-.device-quote {
-  display: inline-flex;
-  flex: 0 0 auto;
-  gap: 8px;
-  margin-right: auto;
-  font-variant-numeric: tabular-nums;
+.device-quote > a:first-child:hover {
+  color: var(--gold-light);
 }
 
 .device-quote b {
@@ -2012,7 +2010,36 @@ a.device-title:hover {
 }
 
 .device-screen {
-  height: 360px;
+  height: 380px;
+}
+
+/* Relay status beside the quote: green and pulsing only while prices are moving. */
+.live-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  margin-right: auto;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--dark-text);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.live-badge--live {
+  color: var(--up-on-dark);
+}
+
+.live-badge--live .pulse-dot {
+  background: var(--up-on-dark);
+}
+
+.live-badge:not(.live-badge--live) .pulse-dot {
+  animation: none;
+  background: currentColor;
+  opacity: 0.6;
 }
 
 /* ---------- AAVL 99 chart (hero and #/aavl-99) ---------- */
@@ -2399,7 +2426,7 @@ a.device-title:hover {
 }
 
 .float-card--top {
-  top: -14px;
+  top: -28px;
   right: -12px;
 }
 
@@ -4786,7 +4813,7 @@ tbody tr:last-child td {
 
 @media (max-width: 680px) {
   :root {
-    --banner-h: 30px;
+    --banner-h: 38px;
     --ticker-h: 36px;
   }
 
@@ -4818,7 +4845,12 @@ tbody tr:last-child td {
   }
 
   .device-screen {
-    height: 300px;
+    height: 360px;
+  }
+
+  /* Room for the status badge in the narrow title bar: % change only. */
+  .aavl-quote-abs {
+    display: none;
   }
 
   .device-phone {

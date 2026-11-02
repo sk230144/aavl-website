@@ -1,0 +1,600 @@
+{
+ "baseDate": "2026-09-25",
+ "baseValue": 1000,
+ "stocks": [
+  {
+   "symbol": "RELIANCE",
+   "ticker": "RELIANCE.NS",
+   "factor": 0.08311741006429635,
+   "base": 1226
+  },
+  {
+   "symbol": "HDFCBANK",
+   "ticker": "HDFCBANK.NS",
+   "factor": 0.09391049845548692,
+   "base": 735.6
+  },
+  {
+   "symbol": "SBIN",
+   "ticker": "SBIN.NS",
+   "factor": 0.055780265675370866,
+   "base": 983
+  },
+  {
+   "symbol": "ICICIBANK",
+   "ticker": "ICICIBANK.NS",
+   "factor": 0.043914785230491575,
+   "base": 1326.8
+  },
+  {
+   "symbol": "TCS",
+   "ticker": "TCS.NS",
+   "factor": 0.022311518489496307,
+   "base": 2082
+  },
+  {
+   "symbol": "LT",
+   "ticker": "LT.NS",
+   "factor": 0.008422275776722157,
+   "base": 3876.2
+  },
+  {
+   "symbol": "INFY",
+   "ticker": "INFY.NS",
+   "factor": 0.02511882512296376,
+   "base": 1000.2
+  },
+  {
+   "symbol": "HINDUNILVR",
+   "ticker": "HINDUNILVR.NS",
+   "factor": 0.014126675043236957,
+   "base": 1942.9
+  },
+  {
+   "symbol": "SUNPHARMA",
+   "ticker": "SUNPHARMA.NS",
+   "factor": 0.014713617097410302,
+   "base": 1852.2
+  },
+  {
+   "symbol": "M&M",
+   "ticker": "M&M.NS",
+   "factor": 0.007195047453884837,
+   "base": 3035
+  },
+  {
+   "symbol": "AXISBANK",
+   "ticker": "AXISBANK.NS",
+   "factor": 0.01928686471324335,
+   "base": 1222.4
+  },
+  {
+   "symbol": "ITC",
+   "ticker": "ITC.NS",
+   "factor": 0.07656934635737138,
+   "base": 269
+  },
+  {
+   "symbol": "ADANIPORTS",
+   "ticker": "ADANIPORTS.NS",
+   "factor": 0.014571801696023613,
+   "base": 1788
+  },
+  {
+   "symbol": "ULTRACEMCO",
+   "ticker": "ULTRACEMCO.NS",
+   "factor": 0.0017911654363829243,
+   "base": 11155
+  },
+  {
+   "symbol": "ADANIPOWER",
+   "ticker": "ADANIPOWER.NS",
+   "factor": 0.1181558801088281,
+   "base": 202.75
+  },
+  {
+   "symbol": "HAL",
+   "ticker": "HAL.NS",
+   "factor": 0.004075564046879554,
+   "base": 4800
+  },
+  {
+   "symbol": "COALINDIA",
+   "ticker": "COALINDIA.NS",
+   "factor": 0.039592737942194825,
+   "base": 426.1
+  },
+  {
+   "symbol": "NESTLEIND",
+   "ticker": "NESTLEIND.NS",
+   "factor": 0.011521877382167364,
+   "base": 1362.6
+  },
+  {
+   "symbol": "HINDZINC",
+   "ticker": "HINDZINC.NS",
+   "factor": 0.02580550889446695,
+   "base": 588.95
+  },
+  {
+   "symbol": "TATASTEEL",
+   "ticker": "TATASTEEL.NS",
+   "factor": 0.07749953404076865,
+   "base": 187.97
+  },
+  {
+   "symbol": "HINDALCO",
+   "ticker": "HINDALCO.NS",
+   "factor": 0.013604229807882312,
+   "base": 977
+  },
+  {
+   "symbol": "EICHERMOT",
+   "ticker": "EICHERMOT.NS",
+   "factor": 0.001613119613841207,
+   "base": 7360
+  },
+  {
+   "symbol": "ADANIGREEN",
+   "ticker": "ADANIGREEN.NS",
+   "factor": 0.010383801561923882,
+   "base": 1296.6
+  },
+  {
+   "symbol": "VAML",
+   "ticker": "VAML.NS",
+   "factor": 0.02402424551024075,
+   "base": 426.75
+  },
+  {
+   "symbol": "DIVISLAB",
+   "ticker": "DIVISLAB.NS",
+   "factor": 0.0016246702974785018,
+   "base": 9619.5
+  },
+  {
+   "symbol": "JIOFIN",
+   "ticker": "JIOFIN.NS",
+   "factor": 0.04084865680546826,
+   "base": 227
+  },
+  {
+   "symbol": "TMCV",
+   "ticker": "TMCV.NS",
+   "factor": 0.022479621209890194,
+   "base": 441.5
+  },
+  {
+   "symbol": "ICICIAMC",
+   "ticker": "ICICIAMC.NS",
+   "factor": 0.0029556602539028047,
+   "base": 3184.6001
+  },
+  {
+   "symbol": "PIDILITIND",
+   "ticker": "PIDILITIND.NS",
+   "factor": 0.006210000652446617,
+   "base": 1517.2
+  },
+  {
+   "symbol": "TECHM",
+   "ticker": "TECHM.NS",
+   "factor": 0.005961922407398352,
+   "base": 1548
+  },
+  {
+   "symbol": "TORNTPHARM",
+   "ticker": "TORNTPHARM.NS",
+   "factor": 0.002336086538881585,
+   "base": 4988.5
+  },
+  {
+   "symbol": "ADANIENSOL",
+   "ticker": "ADANIENSOL.NS",
+   "factor": 0.0071223354329217285,
+   "base": 1338.5
+  },
+  {
+   "symbol": "LTM",
+   "ticker": "LTM.NS",
+   "factor": 0.0018561449011453087,
+   "base": 4083
+  },
+  {
+   "symbol": "BRITANNIA",
+   "ticker": "BRITANNIA.NS",
+   "factor": 0.0014419980892198601,
+   "base": 4937.5
+  },
+  {
+   "symbol": "CUMMINSIND",
+   "ticker": "CUMMINSIND.NS",
+   "factor": 0.00168846079639756,
+   "base": 4945
+  },
+  {
+   "symbol": "BSE",
+   "ticker": "BSE.NS",
+   "factor": 0.0026464792146789085,
+   "base": 3191.5
+  },
+  {
+   "symbol": "TATAPOWER",
+   "ticker": "TATAPOWER.NS",
+   "factor": 0.02066179943446052,
+   "base": 367.5
+  },
+  {
+   "symbol": "CGPOWER",
+   "ticker": "CGPOWER.NS",
+   "factor": 0.009437595152650665,
+   "base": 886
+  },
+  {
+   "symbol": "AMBUJACEM",
+   "ticker": "AMBUJACEM.NS",
+   "factor": 0.015408922378424486,
+   "base": 383.8
+  },
+  {
+   "symbol": "APOLLOHOSP",
+   "ticker": "APOLLOHOSP.NS",
+   "factor": 0.0008754207255258255,
+   "base": 8889
+  },
+  {
+   "symbol": "BHEL",
+   "ticker": "BHEL.NS",
+   "factor": 0.021619075216367523,
+   "base": 418.95
+  },
+  {
+   "symbol": "CIPLA",
+   "ticker": "CIPLA.NS",
+   "factor": 0.0048360885575349675,
+   "base": 1399.7
+  },
+  {
+   "symbol": "DRREDDY",
+   "ticker": "DRREDDY.NS",
+   "factor": 0.005769001241341937,
+   "base": 1201
+  },
+  {
+   "symbol": "ASHOKLEY",
+   "ticker": "ASHOKLEY.NS",
+   "factor": 0.036142654290273565,
+   "base": 159.08
+  },
+  {
+   "symbol": "MARICO",
+   "ticker": "MARICO.NS",
+   "factor": 0.007795182916168447,
+   "base": 819
+  },
+  {
+   "symbol": "MAZDOCK",
+   "ticker": "MAZDOCK.NS",
+   "factor": 0.002498838604005658,
+   "base": 2199.6001
+  },
+  {
+   "symbol": "JSWENERGY",
+   "ticker": "JSWENERGY.NS",
+   "factor": 0.011727642265433083,
+   "base": 506.55
+  },
+  {
+   "symbol": "FEDERALBNK",
+   "ticker": "FEDERALBNK.NS",
+   "factor": 0.01489502083362082,
+   "base": 322
+  },
+  {
+   "symbol": "NATIONALUM",
+   "ticker": "NATIONALUM.NS",
+   "factor": 0.011394765545682148,
+   "base": 358.7
+  },
+  {
+   "symbol": "MCX",
+   "ticker": "MCX.NS",
+   "factor": 0.0015326146475326552,
+   "base": 3324.8999
+  },
+  {
+   "symbol": "DIXON",
+   "ticker": "DIXON.NS",
+   "factor": 0.0003726572007419869,
+   "base": 13390
+  },
+  {
+   "symbol": "GLENMARK",
+   "ticker": "GLENMARK.NS",
+   "factor": 0.0017113316964959275,
+   "base": 2380
+  },
+  {
+   "symbol": "LINDEINDIA",
+   "ticker": "LINDEINDIA.NS",
+   "factor": 0.0005250097737689766,
+   "base": 6142.5
+  },
+  {
+   "symbol": "COLPAL",
+   "ticker": "COLPAL.NS",
+   "factor": 0.0016442949674292983,
+   "base": 1855.8
+  },
+  {
+   "symbol": "VOLTAS",
+   "ticker": "VOLTAS.NS",
+   "factor": 0.001971393355744221,
+   "base": 1118.2
+  },
+  {
+   "symbol": "MPHASIS",
+   "ticker": "MPHASIS.NS",
+   "factor": 0.0011590300667587772,
+   "base": 2234
+  },
+  {
+   "symbol": "KEI",
+   "ticker": "KEI.NS",
+   "factor": 0.000544662705034799,
+   "base": 4673.5
+  },
+  {
+   "symbol": "AIIL",
+   "ticker": "AIIL.NS",
+   "factor": 0.0050788604881788985,
+   "base": 559.6
+  },
+  {
+   "symbol": "PETRONET",
+   "ticker": "PETRONET.NS",
+   "factor": 0.009153539685307332,
+   "base": 286.5
+  },
+  {
+   "symbol": "COCHINSHIP",
+   "ticker": "COCHINSHIP.NS",
+   "factor": 0.0016384283870285066,
+   "base": 1377
+  },
+  {
+   "symbol": "ANTHEM",
+   "ticker": "ANTHEM.NS",
+   "factor": 0.003543258394331429,
+   "base": 873.6
+  },
+  {
+   "symbol": "UBL",
+   "ticker": "UBL.NS",
+   "factor": 0.001615042437006065,
+   "base": 1251.3
+  },
+  {
+   "symbol": "FLUOROCHEM",
+   "ticker": "FLUOROCHEM.NS",
+   "factor": 0.0006760777494218339,
+   "base": 4441.3999
+  },
+  {
+   "symbol": "3MINDIA",
+   "ticker": "3MINDIA.NS",
+   "factor": 0.0000680491138600169,
+   "base": 33925
+  },
+  {
+   "symbol": "AIAENG",
+   "ticker": "AIAENG.NS",
+   "factor": 0.0005730889205806428,
+   "base": 3919.3999
+  },
+  {
+   "symbol": "AJANTPHARM",
+   "ticker": "AJANTPHARM.NS",
+   "factor": 0.0007612312302413571,
+   "base": 3547.8
+  },
+  {
+   "symbol": "HEXT",
+   "ticker": "HEXT.NS",
+   "factor": 0.0036372228536749184,
+   "base": 496.7
+  },
+  {
+   "symbol": "CRISIL",
+   "ticker": "CRISIL.NS",
+   "factor": 0.0004507225651696848,
+   "base": 4520
+  },
+  {
+   "symbol": "CDSL",
+   "ticker": "CDSL.NS",
+   "factor": 0.0012953555064599295,
+   "base": 1318
+  },
+  {
+   "symbol": "FORCEMOT",
+   "ticker": "FORCEMOT.NS",
+   "factor": 0.00008099456661943569,
+   "base": 17388
+  },
+  {
+   "symbol": "HSCL",
+   "ticker": "HSCL.NS",
+   "factor": 0.003119385074706472,
+   "base": 678.75
+  },
+  {
+   "symbol": "DEEPAKNTR",
+   "ticker": "DEEPAKNTR.NS",
+   "factor": 0.0008308193703680748,
+   "base": 1587.1
+  },
+  {
+   "symbol": "PFIZER",
+   "ticker": "PFIZER.NS",
+   "factor": 0.0002798504619273125,
+   "base": 4000.8
+  },
+  {
+   "symbol": "DATAPATTNS",
+   "ticker": "DATAPATTNS.NS",
+   "factor": 0.00037064582902950413,
+   "base": 4418.7998
+  },
+  {
+   "symbol": "RRKABEL",
+   "ticker": "RRKABEL.NS",
+   "factor": 0.00040668590357763074,
+   "base": 2528.3
+  },
+  {
+   "symbol": "NSDL",
+   "ticker": "NSDL.BO",
+   "factor": 0.001231627741186217,
+   "base": 772
+  },
+  {
+   "symbol": "CAMS",
+   "ticker": "CAMS.NS",
+   "factor": 0.0015396717762214392,
+   "base": 707.35
+  },
+  {
+   "symbol": "SYRMA",
+   "ticker": "SYRMA.NS",
+   "factor": 0.0011935780653143692,
+   "base": 1732.6
+  },
+  {
+   "symbol": "INOXWIND",
+   "ticker": "INOXWIND.NS",
+   "factor": 0.010934121637539066,
+   "base": 74.75
+  },
+  {
+   "symbol": "VEDPOWER",
+   "ticker": "VEDPOWER.NS",
+   "factor": 0.023990793310109684,
+   "base": 32.95
+  },
+  {
+   "symbol": "JBMA",
+   "ticker": "JBMA.NS",
+   "factor": 0.0014445135420944673,
+   "base": 586.6
+  },
+  {
+   "symbol": "CUPID",
+   "ticker": "CUPID.NS",
+   "factor": 0.0084219467628953,
+   "base": 270
+  },
+  {
+   "symbol": "VOGL",
+   "ticker": "VOGL.NS",
+   "factor": 0.024037300789694557,
+   "base": 34.37
+  },
+  {
+   "symbol": "VISL",
+   "ticker": "VISL.NS",
+   "factor": 0.023807085240333883,
+   "base": 32.78
+  },
+  {
+   "symbol": "SWANDEF",
+   "ticker": "SWANDEF.NS",
+   "factor": 0.0003197673934338803,
+   "base": 2679.7
+  },
+  {
+   "symbol": "OLECTRA",
+   "ticker": "OLECTRA.NS",
+   "factor": 0.0005036664453280618,
+   "base": 1207.2
+  },
+  {
+   "symbol": "TEJASNET",
+   "ticker": "TEJASNET.NS",
+   "factor": 0.0011734418785856581,
+   "base": 503.85
+  },
+  {
+   "symbol": "AVALON",
+   "ticker": "AVALON.NS",
+   "factor": 0.00041152597327947415,
+   "base": 2328.5
+  },
+  {
+   "symbol": "V2RETAIL",
+   "ticker": "V2RETAIL.NS",
+   "factor": 0.0022427971105620746,
+   "base": 214.72
+  },
+  {
+   "symbol": "E2E",
+   "ticker": "E2E.NS",
+   "factor": 0.0012733468268493289,
+   "base": 652.15
+  },
+  {
+   "symbol": "PRICOLLTD",
+   "ticker": "PRICOLLTD.NS",
+   "factor": 0.0007430667576024129,
+   "base": 759.4
+  },
+  {
+   "symbol": "TIIL",
+   "ticker": "TIIL.NS",
+   "factor": 0.000027238145464292337,
+   "base": 3003.3999
+  },
+  {
+   "symbol": "CMSINFO",
+   "ticker": "CMSINFO.NS",
+   "factor": 0.0009718124657276168,
+   "base": 233.17
+  },
+  {
+   "symbol": "VSTTILLERS",
+   "ticker": "VSTTILLERS.NS",
+   "factor": 0.00005368335848672816,
+   "base": 4473.2998
+  },
+  {
+   "symbol": "ASMTEC",
+   "ticker": "ASMTEC.BO",
+   "factor": 0.00009551776872259688,
+   "base": 7004.2002
+  },
+  {
+   "symbol": "SIGMAADV",
+   "ticker": "SIGMAADV.NS",
+   "factor": 0.0011898136202930644,
+   "base": 946
+  },
+  {
+   "symbol": "CYIENTDLM",
+   "ticker": "CYIENTDLM.NS",
+   "factor": 0.000389140661078523,
+   "base": 931.4
+  },
+  {
+   "symbol": "SUMEETINDS",
+   "ticker": "SUMEETINDS.NS",
+   "factor": 0.004262212162558862,
+   "base": 12.18
+  },
+  {
+   "symbol": "SBIFUNDS",
+   "ticker": "SBIFUNDS.NS",
+   "factor": 0.012510779583729642,
+   "base": 531.15
+  }
+ ]
+}

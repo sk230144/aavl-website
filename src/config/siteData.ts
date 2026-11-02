@@ -32,8 +32,8 @@ export const siteData = {
   ],
   // Scrolling strip under the header. Deliberately notices, not prices: there is no licensed market-data feed.
   tickerNotices: [
-    'NSE AP Reg. No. AP2069592873 (CM & F&O)',
-    'BSE AP Reg. No. AP01074801179851 (Cash & Equity Derivatives)',
+    'NSE Reg. No. AP2069592873 (CM & F&O)',
+    'BSE Reg. No. AP01074801179851 (Cash & Equity Derivatives)',
     'Sharekhan Ltd. SEBI Reg. No. INZ000171337',
     'Pay only to Sharekhan Limited from your registered bank account – never in cash',
     'Update your mobile number & email ID with your stock broker to prevent unauthorised transactions',
@@ -137,8 +137,8 @@ export const siteData = {
     { label: 'Incorporation', value: '10 February 2026 • Central Registration Centre, MCA' },
     { label: 'Affiliated stock broker', value: 'Sharekhan Limited (Mirae Asset Sharekhan)', tone: 'primary' },
     { label: 'Stock broker SEBI Reg. No.', value: 'INZ000171337', tone: 'gold' },
-    { label: 'NSE AP Registration No.', sub: 'Segments: Capital Market (CM) & Equity Derivatives (F&O)', value: 'AP2069592873', meta: 'Appointed: 19 Jun 2026', tone: 'primary' },
-    { label: 'BSE AP Registration No.', sub: 'Segments: Cash & Equity Derivatives', value: 'AP01074801179851', meta: 'Approved: 29 Jul 2026', tone: 'primary' },
+    { label: 'NSE Reg. No.', sub: 'Segments: Capital Market (CM) & Equity Derivatives (F&O)', value: 'AP2069592873', meta: 'Appointed: 19 Jun 2026', tone: 'primary' },
+    { label: 'BSE Reg. No.', sub: 'Segments: Cash & Equity Derivatives', value: 'AP01074801179851', meta: 'Approved: 29 Jul 2026', tone: 'primary' },
     { label: 'Exchange member IDs (Sharekhan)', value: 'NSE Member: 10733 | BSE Member: 748' },
     { label: 'Commodity segment (MCX)', value: 'Not applicable for this Authorised Person', tone: 'chip' },
   ] as { label: string; value: string; sub?: string; meta?: string; tone?: 'primary' | 'gold' | 'chip' }[],
@@ -248,8 +248,8 @@ export const siteData = {
   ],
   downloads: [
     { label: 'Certificate of Incorporation', file: '/documents/certificate-of-incorporation.pdf', category: 'company', source: 'Ministry of Corporate Affairs', preview: '/images/certificates/certificate-of-incorporation.png' },
-    { label: 'NSE AP Certificate', file: '/documents/nse-ap-certificate.pdf', category: 'registration', source: 'NSE • AP2069592873', preview: '/images/certificates/nse-ap-certificate.png' },
-    { label: 'BSE AP Certificate', file: '/documents/bse-ap-certificate.pdf', category: 'registration', source: 'BSE • AP01074801179851', preview: '/images/certificates/bse-ap-certificate.png' },
+    { label: 'NSE Reg. No. Certificate', file: '/documents/nse-ap-certificate.pdf', category: 'registration', source: 'NSE • AP2069592873', preview: '/images/certificates/nse-ap-certificate.png' },
+    { label: 'BSE Reg. No. Certificate', file: '/documents/bse-ap-certificate.pdf', category: 'registration', source: 'BSE • AP01074801179851', preview: '/images/certificates/bse-ap-certificate.png' },
     { label: 'Trading Terminal Details', file: '/documents/trading-terminal-details.pdf', category: 'registration', source: 'Sharekhan Limited' },
     { label: 'Sharekhan Registrations', file: '/documents/sharekhan-certificate-2026.pdf', category: 'registration', source: 'Mirae Asset Sharekhan' },
     { label: 'Investor Do’s & Don’ts', file: '/documents/investor-dos-and-donts.pdf', category: 'investor', source: 'Mirae Asset Sharekhan' },

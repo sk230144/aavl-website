@@ -10,6 +10,9 @@ import { fetchChart, localDate, localMinute, pool, round } from './yahoo.mjs'
 
 const CONSTITUENTS = new URL('../AAVL99_Terminal/constituents.csv', import.meta.url)
 const OUT = new URL('../public/aavl99.json', import.meta.url)
+// What the live relay (worker/src/index.js) needs to recompute the index from current prices.
+// Redeploy the Worker after it changes (new constituents or base prices).
+const BASIS_OUT = new URL('../worker/src/aavl99-basis.json', import.meta.url)
 const BASE_DATE = '2026-09-25'
 const BASE_VALUE = 1000
 const IST = 19800
@@ -181,6 +184,24 @@ async function main() {
       intraday,
       stocks: rows,
     })}\n`,
+  )
+  // Index = Σ factor × price, where factor = 1000 × shares ÷ base market cap.
+  await writeFile(
+    BASIS_OUT,
+    `${JSON.stringify(
+      {
+        baseDate: BASE_DATE,
+        baseValue: BASE_VALUE,
+        stocks: stocks.map((s) => ({
+          symbol: s.symbol,
+          ticker: s.data?.ticker ?? null,
+          factor: (BASE_VALUE * s.shares) / baseMcap,
+          base: round(s.base, 4),
+        })),
+      },
+      null,
+      1,
+    )}\n`,
   )
   console.log(`aavl99: ${round(value)} (${round((value / prevClose - 1) * 100)}%) on ${session}; ${constituents.length - missing.length}/${constituents.length} stocks priced.`)
 }

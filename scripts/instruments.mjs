@@ -1,10 +1,11 @@
 // The instruments shown on the website. Shared by the build-time snapshot (fetch-market-data.mjs)
 // and the live quote relay (worker/src/index.js), so both always cover the same ids.
 // `range` is how much daily history the build keeps ('1d' = quote only, for the ticker); `ohlc` keeps
-// open/high/low for candlestick charts.
+// open/high/low for candlestick charts; `intraday` keeps the latest session's line (hero 1D chart),
+// which the relay then refreshes minute by minute.
 export const INSTRUMENTS = [
-  { id: 'SENSEX', label: 'SENSEX', name: 'S&P BSE SENSEX', yahoo: '^BSESN', range: '5y', ohlc: true },
-  { id: 'NIFTY', label: 'NIFTY 50', name: 'NIFTY 50', yahoo: '^NSEI', range: '1y' },
+  { id: 'SENSEX', label: 'SENSEX', name: 'S&P BSE SENSEX', yahoo: '^BSESN', range: '5y', ohlc: true, intraday: true },
+  { id: 'NIFTY', label: 'NIFTY 50', name: 'NIFTY 50', yahoo: '^NSEI', range: '1y', ohlc: true, intraday: true },
   { id: 'BSE500', label: 'BSE 500', name: 'S&P BSE 500', yahoo: 'BSE-500.BO', range: '1y' },
   { id: 'USDINR', label: 'USD/INR', name: 'US dollar / Indian rupee', yahoo: 'INR=X', range: '1y' },
   { id: 'GOLD', label: 'Gold (USD)', name: 'Gold futures, USD per troy ounce', yahoo: 'GC=F', range: '1y' },

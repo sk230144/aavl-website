@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 
 // Shape of public/market-data.json, written by scripts/fetch-market-data.mjs.
 type RawInstrument = {
@@ -10,11 +10,14 @@ type RawInstrument = {
   changePct: number
   asOf: string
   bars: ([string, number] | [string, number, number, number, number])[]
+  /** Indices only: previous close and the latest session's line. */
+  prevClose?: number
+  intraday?: [string, number][]
 }
 
 /** `d` is a date (YYYY-MM-DD) for daily bars or an IST minute (YYYY-MM-DDTHH:MM) for intraday ones. */
 export type Bar = { d: string; o: number; h: number; l: number; c: number }
-export type Instrument = Omit<RawInstrument, 'bars'> & { bars: Bar[] }
+export type Instrument = Omit<RawInstrument, 'bars' | 'intraday'> & { bars: Bar[]; intraday?: Bar[] }
 export type MarketData = { updatedAt: string; instruments: Record<string, Instrument> }
 
 // Shape of public/aavl99.json, written by scripts/fetch-aavl99.mjs.
@@ -88,76 +91,140 @@ function useJson<R, T>(file: string, parse: (raw: R) => T) {
 
 const parseMarketData = ({ updatedAt, instruments }: { updatedAt: string; instruments: Record<string, RawInstrument> }): MarketData => ({
   updatedAt,
-  instruments: Object.fromEntries(Object.entries(instruments).map(([id, raw]) => [id, { ...raw, bars: raw.bars.map(toBar) }])),
+  instruments: Object.fromEntries(
+    Object.entries(instruments).map(([id, raw]) => [id, { ...raw, bars: raw.bars.map(toBar), intraday: raw.intraday?.map(toBar) }]),
+  ),
 })
 
 const parseAavl99 = (raw: RawAavl99): Aavl99 => ({ ...raw, daily: raw.daily.map(toBar), intraday: raw.intraday.map(toBar) })
 
-// Live quotes: the relay Worker (worker/src/index.js) is polled while the page is visible and its
-// prices replace the build-time snapshot's. Set VITE_QUOTES_URL at build time to enable it; without
-// it, or if the relay is unreachable, the snapshot is shown unchanged.
-type LiveQuote = Pick<Instrument, 'price' | 'change' | 'changePct' | 'asOf'>
-const QUOTES_URL = import.meta.env.VITE_QUOTES_URL as string | undefined
-const POLL_MS = 30_000
+// Live data: the relay Worker (worker/src/index.js) is polled while the page is visible, and its
+// values replace the build-time snapshot's. Set VITE_QUOTES_URL (the Worker's URL) at build time to
+// enable it; without it, or while the relay is unreachable, the snapshot is shown unchanged.
+const RELAY_URL = (import.meta.env.VITE_QUOTES_URL as string | undefined)?.replace(/\/+$/, '')
+// The relay reuses each upstream result for 10–15 s, so polling faster would only repeat values.
+const POLL_MS = 10_000
+// Quotes older than this mean the market is closed (or the feed has stalled).
+const LIVE_WINDOW_MS = 3 * 60_000
 
-let liveQuotes: Record<string, LiveQuote> | null = null
-const liveListeners = new Set<() => void>()
-let pollTimer: number | undefined
+type Feed<T> = { subscribe: (listener: () => void) => () => void; get: () => T | null }
 
-async function pollQuotes() {
-  if (!QUOTES_URL) return
-  try {
-    const response = await fetch(QUOTES_URL, { cache: 'no-store' })
-    if (!response.ok) return
-    const { instruments } = (await response.json()) as { instruments: Record<string, LiveQuote> }
-    liveQuotes = instruments
-    liveListeners.forEach((listener) => listener())
-  } catch {
-    // Keep showing the last good quotes.
+/** One shared poller per relay path, running while at least one component uses it. */
+function createFeed<T extends { asOf: string }>(path: string): Feed<T> {
+  let value: T | null = null
+  let timer: number | undefined
+  const listeners = new Set<() => void>()
+
+  const poll = async () => {
+    try {
+      const response = await fetch(`${RELAY_URL}/${path}`, { cache: 'no-store' })
+      if (!response.ok) return
+      value = (await response.json()) as T
+      listeners.forEach((listener) => listener())
+    } catch {
+      // Keep showing the last good values.
+    }
+  }
+  const onVisibility = () => document.visibilityState === 'visible' && void poll()
+
+  return {
+    get: () => value,
+    subscribe(listener) {
+      if (!RELAY_URL) return () => {}
+      listeners.add(listener)
+      if (listeners.size === 1) {
+        void poll()
+        timer = window.setInterval(() => document.visibilityState === 'visible' && void poll(), POLL_MS)
+        document.addEventListener('visibilitychange', onVisibility)
+      }
+      return () => {
+        listeners.delete(listener)
+        if (!listeners.size) {
+          window.clearInterval(timer)
+          document.removeEventListener('visibilitychange', onVisibility)
+        }
+      }
+    },
   }
 }
 
-const onVisibility = () => {
-  if (document.visibilityState === 'visible') void pollQuotes()
+const useFeed = <T,>(feed: Feed<T>) => useSyncExternalStore(feed.subscribe, feed.get)
+
+type LiveQuote = Pick<Instrument, 'price' | 'change' | 'changePct' | 'asOf' | 'prevClose'> & {
+  session: string | null
+  dayOpen?: number
+  dayHigh?: number
+  dayLow?: number
+  intraday?: [string, number][]
+}
+type LiveAavl99 = Pick<Aavl99, 'asOf' | 'value' | 'prevClose' | 'change' | 'changePct' | 'sinceBasePct' | 'dayHigh' | 'dayLow' | 'advances' | 'declines' | 'unchanged'> & {
+  session: string | null
+  dayOpen: number
+  intraday: [string, number][]
+  stocks: Omit<Aavl99Stock, 'company'>[]
 }
 
-function startPolling() {
-  void pollQuotes()
-  pollTimer = window.setInterval(() => document.visibilityState === 'visible' && void pollQuotes(), POLL_MS)
-  document.addEventListener('visibilitychange', onVisibility)
+const quotesFeed = createFeed<{ asOf: string; instruments: Record<string, LiveQuote> }>('quotes')
+const aavl99Feed = createFeed<LiveAavl99>('aavl99')
+
+/** Replace or add the session's daily bar, keeping the day's open from the snapshot when it has one. */
+function withSessionBar(bars: Bar[], bar: Bar) {
+  const last = bars[bars.length - 1]
+  if (!last || bar.d > last.d) return [...bars, bar]
+  if (bar.d === last.d) return [...bars.slice(0, -1), { ...bar, o: last.o }]
+  return bars
 }
 
-function stopPolling() {
-  window.clearInterval(pollTimer)
-  document.removeEventListener('visibilitychange', onVisibility)
-}
-
-function useLiveQuotes() {
-  const [, rerender] = useState(0)
-  useEffect(() => {
-    if (!QUOTES_URL) return
-    const listener = () => rerender((n) => n + 1)
-    liveListeners.add(listener)
-    if (liveListeners.size === 1) startPolling()
-    return () => {
-      liveListeners.delete(listener)
-      if (!liveListeners.size) stopPolling()
-    }
-  }, [])
-  return liveQuotes
+function mergeQuote(instrument: Instrument, quote: LiveQuote): Instrument {
+  const { price, change, changePct, asOf, session } = quote
+  const merged: Instrument = { ...instrument, price, change, changePct, asOf }
+  if (quote.intraday?.length) {
+    merged.intraday = quote.intraday.map(toBar)
+    merged.prevClose = quote.prevClose
+  }
+  if (session && instrument.bars.length) {
+    merged.bars = withSessionBar(instrument.bars, { d: session, o: quote.dayOpen ?? price, h: quote.dayHigh ?? price, l: quote.dayLow ?? price, c: price })
+  }
+  return merged
 }
 
 export function useMarketData() {
   const snapshot = useJson('market-data.json', parseMarketData)
-  const live = useLiveQuotes()
+  const live = useFeed(quotesFeed)
   return useMemo(() => {
     if (!snapshot || !live) return snapshot
     const instruments = { ...snapshot.instruments }
-    for (const [id, quote] of Object.entries(live)) if (instruments[id]) instruments[id] = { ...instruments[id], ...quote }
+    for (const [id, quote] of Object.entries(live.instruments)) if (instruments[id]) instruments[id] = mergeQuote(instruments[id], quote)
     return { ...snapshot, instruments }
   }, [snapshot, live])
 }
-export const useAavl99 = () => useJson('aavl99.json', parseAavl99)
+
+export function useAavl99() {
+  const snapshot = useJson('aavl99.json', parseAavl99)
+  const live = useFeed(aavl99Feed)
+  return useMemo((): Aavl99 | null | undefined => {
+    if (!snapshot || !live) return snapshot
+    const { session, dayOpen, intraday, stocks, ...values } = live
+    const byStock = new Map(stocks.map((stock) => [stock.symbol, stock]))
+    return {
+      ...snapshot,
+      ...values,
+      session: session ?? snapshot.session,
+      intraday: intraday.length ? intraday.map(toBar) : snapshot.intraday,
+      daily: session ? withSessionBar(snapshot.daily, { d: session, o: dayOpen, h: values.dayHigh, l: values.dayLow, c: values.value }) : snapshot.daily,
+      stocks: snapshot.stocks.map((stock) => ({ ...stock, ...byStock.get(stock.symbol) })),
+    }
+  }, [snapshot, live])
+}
+
+/** 'live' while the relay is answering with current prices, 'closed' when its prices have stopped
+ * moving (outside market hours), 'snapshot' when there is no relay and build-time prices are shown. */
+export function useLiveStatus(): 'live' | 'closed' | 'snapshot' {
+  const quotes = useFeed(quotesFeed)
+  if (!quotes) return 'snapshot'
+  const latest = Math.max(...Object.values(quotes.instruments).map((quote) => Date.parse(quote.asOf)))
+  return Date.now() - latest < LIVE_WINDOW_MS ? 'live' : 'closed'
+}
 
 const dayMs = 86_400_000
 const isMinute = (d: string) => d.length > 10
