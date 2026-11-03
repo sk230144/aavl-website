@@ -48,7 +48,7 @@
   /* Buttons and form controls are softly rounded; cards and panels stay square. */
   --radius: 10px;
   --radius-sm: 8px;
-  --banner-h: 42px;
+  --banner-h: 62px;
   --brand-h: 60px;
   --nav-h: 40px;
   --ticker-h: 36px;
@@ -512,7 +512,7 @@ main:focus {
   overflow: hidden;
   background: linear-gradient(90deg, var(--dark), var(--primary) 70%, var(--primary-container));
   color: white;
-  font-size: 13px;
+  font-size: 14px;
   transition: height 240ms var(--ease-out);
 }
 
@@ -529,11 +529,11 @@ main:focus {
 
 .announce-tag {
   flex: 0 0 auto;
-  padding: 2px 9px;
+  padding: 4px 10px;
   border-radius: 4px;
   background: var(--logo-gold);
   color: var(--dark);
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -4813,12 +4813,12 @@ tbody tr:last-child td {
 
 @media (max-width: 680px) {
   :root {
-    --banner-h: 38px;
+    --banner-h: 56px;
     --ticker-h: 36px;
   }
 
   .announce {
-    font-size: 12px;
+    font-size: 13px;
   }
 
   .announce-dots,
