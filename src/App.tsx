@@ -27,7 +27,7 @@ import {
   X,
 } from 'lucide-react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { Logo } from './components/Brand'
+import { BrandMark, Logo } from './components/Brand'
 import { NeuButton } from './components/NeuButton'
 import { NeuCard } from './components/NeuCard'
 import { Reveal } from './components/Reveal'
@@ -35,7 +35,7 @@ import { SectionTitle } from './components/SectionTitle'
 import { DocumentIllustration, KycIllustration, ServiceArt } from './components/Illustrations'
 import { DesktopNav, MobileNavList } from './components/SiteNav'
 import { AAVL99_ROUTE, HeroIndexChart, IndexQuote, LiveBadge, type IndexId } from './components/Aavl99'
-import { formatPct, formatPrice, useAavl99 } from './components/marketData'
+import { formatPct, formatPrice, useAavl99, useMarketData } from './components/marketData'
 import { MainMarketChart, MarketAsOf, QuoteCard, TickerTape, trend } from './components/MarketCharts'
 import { flattenHrefs, isExternal, navigation, pages } from './config/navigation'
 import { siteData } from './config/siteData'
@@ -180,17 +180,47 @@ function AnnouncementBar({ scrolled }: { scrolled: boolean }) {
 }
 
 // Right side of the logo row: the AAVL 99 index quote.
+// SX40 (Metropolitan Stock Exchange) has no public price feed, so its chip links to MSE's own index page.
+const SX40_URL = 'https://www.mseindia.com/indices/sx40'
+
+function HeaderQuoteChip({ href, icon, name, value, changePct, external = false }: { href: string; icon: ReactNode; name: string; value?: number; changePct?: number; external?: boolean }) {
+  const priced = value != null && changePct != null
+  return (
+    <a
+      className="hq-chip"
+      href={href}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noreferrer' : undefined}
+      aria-label={priced ? `${name} ${formatPrice(value)}, ${formatPct(changePct)}` : `${name} on the MSE website (opens in a new tab)`}
+    >
+      <span className="hq-icon" aria-hidden="true">{icon}</span>
+      <span className="hq-body">
+        <span className="hq-name">{name}</span>
+        {priced ? (
+          <span className="hq-line">
+            <strong>{formatPrice(value)}</strong>
+            <span className={trend(changePct)}>{changePct >= 0 ? '▲' : '▼'} {formatPct(changePct)}</span>
+          </span>
+        ) : (
+          <span className="hq-line hq-line--link">View on MSE <ArrowUpRight size={12} /></span>
+        )}
+      </span>
+    </a>
+  )
+}
+
+// Logo row: AAVL 99 plus the benchmark indices, with live prices when the relay is configured.
 function HeaderQuotes() {
   const aavl99 = useAavl99()
+  const market = useMarketData()
+  const nifty = market?.instruments.NIFTY
+  const sensex = market?.instruments.SENSEX
   return (
     <div className="header-quotes">
-      {aavl99 ? (
-        <a className="hq-chip" href={AAVL99_ROUTE} aria-label={`AAVL 99 index ${formatPrice(aavl99.value)}, ${formatPct(aavl99.changePct)}. Open details`}>
-          <span className="hq-name">AAVL 99</span>
-          <strong>{formatPrice(aavl99.value)}</strong>
-          <span className={trend(aavl99.change)}>{aavl99.change >= 0 ? '▲' : '▼'} {formatPct(aavl99.changePct)}</span>
-        </a>
-      ) : null}
+      {aavl99 ? <HeaderQuoteChip href={AAVL99_ROUTE} icon={<BrandMark />} name="AAVL 99" value={aavl99.value} changePct={aavl99.changePct} /> : null}
+      {nifty ? <HeaderQuoteChip href="#markets" icon="NSE" name="NIFTY 50" value={nifty.price} changePct={nifty.changePct} /> : null}
+      {sensex ? <HeaderQuoteChip href="#markets" icon="BSE" name="SENSEX" value={sensex.price} changePct={sensex.changePct} /> : null}
+      <HeaderQuoteChip href={SX40_URL} icon="MSE" name="SX40" external />
     </div>
   )
 }
